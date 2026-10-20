@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 408 342">
+  <defs>
+    <!-- Aurigene-inspired green/teal/blue gradient -->
+    <linearGradient id="leftLeg" x1="55" y1="285" x2="190" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#132E9B"/>
+      <stop offset="0.48" stop-color="#16B8C5"/>
+      <stop offset="1" stop-color="#9BC500"/>
+    </linearGradient>
+
+    <linearGradient id="rightLeg" x1="210" y1="35" x2="330" y2="285" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A6C900"/>
+      <stop offset="0.45" stop-color="#39B96B"/>
+      <stop offset="1" stop-color="#142D9D"/>
+    </linearGradient>
+
+    <linearGradient id="crossbar" x1="45" y1="245" x2="335" y2="115" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#112B98"/>
+      <stop offset="0.38" stop-color="#18B9C4"/>
+      <stop offset="0.72" stop-color="#36A96A"/>
+      <stop offset="1" stop-color="#F1E62A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Two legs of the stylized Aurigene A -->
+  <path d="M58 278 L194 42 L330 278"
+        fill="none"
+        stroke="url(#leftLeg)"
+        stroke-width="61"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Right leg receives its own gradient on the visible ribbon -->
+  <path d="M194 42 L330 278"
+        fill="none"
+        stroke="url(#rightLeg)"
+        stroke-width="61"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Diagonal crossbar -->
+  <path d="M58 257 L327 126"
+        fill="none"
+        stroke="url(#crossbar)"
+        stroke-width="61"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+</svg>
