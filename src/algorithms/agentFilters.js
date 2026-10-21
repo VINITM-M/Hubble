@@ -15,27 +15,20 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import { CANONICAL_DEPARTMENTS } from "../models/agents.js";
+
 // ── Storage keys ─────────────────────────────────────────────────────────────
 const FAVORITES_KEY = "hubble_favorite_agents_v1";
 const RATINGS_KEY   = "hubble_agent_user_ratings_v1";
 
 // ── Department → category mapping (used by department filter) ─────────────────
-const DEPT_CATEGORY_MAP = {
-  "Project Management": ["Project Management", "PMO & Strategy"],
-  "Research & Analysis": [
-    "Research & Analysis", "Process R&D", "NBE", "NBE Team (APSL, Miyapur)",
-    "Downstream mAb Team", "Analytical R&D Team (APSL, Shamirpet)",
-    "Antibody Discovery / R&D", "Quality Assurance", "IPDO / Technology Transfer",
-  ],
-  "Business Ops": ["Business Ops", "Cross Functional", "Internal DPeX", "VSM", "DPeX", "Global Operations"],
-  "Engineering": ["Engineering", "Digital Tech", "Platform + AI Layer"],
-  "Marketing":   ["Marketing", "Commercial Strategy", "Business Development"],
-  "HR":          ["HR", "HR Operations", "Human Resources"],
-  "Finance":     ["Finance"],
-};
+const DEPT_CATEGORY_MAP = {};
+CANONICAL_DEPARTMENTS.forEach((dept) => {
+  DEPT_CATEGORY_MAP[dept] = [dept];
+});
 
 // ── Agent type helpers ────────────────────────────────────────────────────────
-const APPLICATION_IDS = new Set(["Capacitor-Application", "Aurigene-AI-CDMO-Biologics"]);
+const APPLICATION_IDS = new Set(["Capacitor-Application", "Aurigene-AI-CDMO-Biologics", "ELISA-Hybridoma-AI"]);
 
 export function isApplication(agent) {
   return agent.type === "application" || APPLICATION_IDS.has(agent.id);
@@ -225,7 +218,7 @@ export function saveFavorites(favs) {
 export function computeDepartmentCounts(agentsList) {
   const map = new Map();
   agentsList.forEach((agent) => {
-    const dept = (agent.department || "Other").trim();
+    const dept = (agent.department || "General").trim();
     map.set(dept, (map.get(dept) || 0) + 1);
   });
   return Array.from(map.entries())
@@ -244,12 +237,11 @@ export function computeToolsCounts(agentsList) {
 }
 
 export function computeStatusCounts(agentsList) {
-  let available = 0, comingSoon = 0, tbd = 0;
+  let available = 0, comingSoon = 0;
   agentsList.forEach((agent) => {
     const s = (agent.primary?.status || "").toLowerCase();
     if (s === "available") available++;
-    else if (s === "coming soon") comingSoon++;
-    else tbd++;
+    else comingSoon++; // covers "coming soon", "tbd", and anything else
   });
-  return { available, comingSoon, tbd };
+  return { available, comingSoon, tbd: 0 };
 }

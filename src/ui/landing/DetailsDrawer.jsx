@@ -14,7 +14,8 @@
  */
 
 import React from "react";
-import { ExternalLink, Flame, Play, Star, X } from "lucide-react";
+import { ExternalLink, Play, Star, X } from "lucide-react";
+import trendingIcon from "../../assets/trending-48.png";
 
 export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorited, onToggleFavorite }) {
   if (!agent) return null;
@@ -33,8 +34,8 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
             type="button"
             className={`favorite-btn drawer-fav-btn ${isFavorited ? "is-favorited" : ""}`}
             onClick={() => onToggleFavorite(agent.id)}
-            title={isFavorited ? "Saved in Favorites (Click to remove)" : "Save to Favorites"}
-            aria-label={isFavorited ? "Saved in Favorites" : "Save to Favorites"}
+            title={isFavorited ? "In Favorites (Click to remove)" : "Add to Favorites"}
+            aria-label={isFavorited ? "In Favorites" : "Add to Favorites"}
           >
             <Star
               size={16}
@@ -62,8 +63,7 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
           <div className="drawer-header-badges">
             {agent.isTrending && (
               <span className="badge hot-tag" title="Trending / Frequently Used">
-                <Flame size={12} className="hot-flame-icon" />
-                <span>Trending</span>
+                <img src={trendingIcon} alt="Trending" className="trending-icon-img" />
               </span>
             )}
           </div>
@@ -72,7 +72,7 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
         {/* Title + description */}
         <div className="drawer-kicker">Agent details</div>
         <h2 id="drawer-title">{agent.name}</h2>
-        <p className="drawer-description">{agent.description}</p>
+        <p className="drawer-description">{agent.detailedDescription || agent.description}</p>
 
         {/* Department */}
         <section className="drawer-section">
@@ -99,7 +99,7 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
             <strong style={{ color: "#fbbf24" }}>⭐ {Number(agent.rating).toFixed(1)} ({agent.reviews})</strong>
           </div>
           <div>
-            <span>Owner</span>
+            <span>Developer</span>
             <strong>{agent.owner ?? "AI Innovation Team"}</strong>
           </div>
           <div>

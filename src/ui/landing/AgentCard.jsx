@@ -14,11 +14,13 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import React, { useMemo } from "react";
-import { ArrowRight, Flame, Play, Star } from "lucide-react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
+import { ArrowRight, Play, Star } from "lucide-react";
+import trendingIcon from "../../assets/trending-48.png";
 
 export function AgentCard({
   agent,
+  index = 0,
   onLaunch,
   onOpenDemo,
   onOpenDetails,
@@ -30,21 +32,44 @@ export function AgentCard({
   const Icon        = !isImageIcon ? agent.icon : null;
   const disabled    = agent.primary.status !== "Available";
 
+  const cardRef = useRef(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+        }
+      },
+      { threshold: 0.12 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const row = Math.floor(index / 3);
+
   // Trim capability tags to 3 words max each, show first 3
   const tags = useMemo(() => {
-    if (agent.capabilities && agent.capabilities.length > 0) {
-      return agent.capabilities.slice(0, 3).map((c) => {
+    const list = agent.cardTags || agent.capabilities;
+    if (Array.isArray(list) && list.length > 0) {
+      return list.slice(0, 3).map((c) => {
         const words = c.trim().split(" ");
         return words.length > 3 ? words.slice(0, 3).join(" ") : c;
       });
     }
     return ["Workflow AI", "Automation", "Intelligence"];
-  }, [agent.capabilities]);
+  }, [agent.cardTags, agent.capabilities]);
 
   return (
     <article
+      ref={cardRef}
       id={`agent-card-${agent.id}`}
-      className={`agent-card accent-${agent.accent || "blue"} ${isHighlighted ? "card-highlight-active" : ""} ${disabled ? "card-unavailable" : ""}`}
+      style={{ "--card-index": index, "--card-row": row }}
+      className={`agent-card accent-${agent.accent || "blue"} ${isInView ? "is-in-view" : ""} ${isHighlighted ? "card-highlight-active" : ""} ${disabled ? "card-unavailable" : ""}`}
     >
       {/* Top row: icon + badges + favorite */}
       <div className="card-topline">
@@ -64,16 +89,15 @@ export function AgentCard({
         <div className="card-topline-right">
           {agent.isTrending && (
             <span className="badge hot-tag" title="Trending / Frequently Used">
-              <Flame size={12} className="hot-flame-icon" fill="currentColor" />
-              <span>Trending</span>
+              <img src={trendingIcon} alt="Trending" className="trending-icon-img" />
             </span>
           )}
           <button
             type="button"
             className={`favorite-btn ${isFavorited ? "is-favorited" : ""}`}
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(agent.id); }}
-            title={isFavorited ? "Saved in Favorites (Click to remove)" : "Save to Favorites"}
-            aria-label={isFavorited ? "Saved in Favorites" : "Save to Favorites"}
+            title={isFavorited ? "In Favorites (Click to remove)" : "Add to Favorites"}
+            aria-label={isFavorited ? "In Favorites" : "Add to Favorites"}
           >
             <Star
               size={14}
@@ -93,11 +117,13 @@ export function AgentCard({
       </div>
 
       {/* Capability chips */}
-      <div className="card-capability-chips">
-        {tags.map((tag, idx) => (
-          <span key={idx} className="capability-chip">{tag}</span>
-        ))}
-      </div>
+      {tags.length > 0 && (
+        <div className="card-capability-chips">
+          {tags.map((tag, idx) => (
+            <span key={idx} className="capability-chip">{tag}</span>
+          ))}
+        </div>
+      )}
 
       {/* Footer: ratings + actions */}
       <div className="card-footer-container">

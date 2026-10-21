@@ -23,7 +23,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { initialAgents } from "./models/agents.js";
 
 // ── Algorithms ────────────────────────────────────────────────────────────────
-import { parseRoute }           from "./algorithms/routeParser.js";
+import { parseRoute } from "./algorithms/routeParser.js";
 import {
   filterAgents,
   computeAgentRatings,
@@ -48,9 +48,12 @@ import { LandingPage } from "./ui/landing/LandingPage.jsx";
 // ── UI – Upcoming Previews page ───────────────────────────────────────────────
 import { UpcomingAgentsPage } from "./ui/upcoming/UpcomingAgentsPage.jsx";
 
+// ── UI – Stories page ─────────────────────────────────────────────────────────
+import { StoriesPage } from "./ui/stories/StoriesPage.jsx";
+
 // ── UI – Tracker pages ────────────────────────────────────────────────────────
-import { TrackerPage }          from "./ui/tracker/Tracker.jsx";
-import { AgentUserHistory }     from "./ui/tracker/AgentUserHistory.jsx";
+import { TrackerPage } from "./ui/tracker/Tracker.jsx";
+import { AgentUserHistory } from "./ui/tracker/AgentUserHistory.jsx";
 import { DepartmentUserHistory } from "./ui/tracker/DepartmentUserHistory.jsx";
 
 // ── Models ────────────────────────────────────────────────────────────────────
@@ -79,7 +82,7 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem("hubble_dark_mode", JSON.stringify(isDarkMode));
-    } catch {}
+    } catch { }
     if (isDarkMode) {
       document.documentElement.classList.add("dark-mode");
     } else {
@@ -97,35 +100,35 @@ export default function App() {
 
   useEffect(() => {
     const onPopState = () => setRouteState(parseRoute(window.location.pathname));
-    window.addEventListener("popstate",   onPopState);
+    window.addEventListener("popstate", onPopState);
     window.addEventListener("hashchange", onPopState);
     return () => {
-      window.removeEventListener("popstate",   onPopState);
+      window.removeEventListener("popstate", onPopState);
       window.removeEventListener("hashchange", onPopState);
     };
   }, []);
 
   // ── Agent catalog ────────────────────────────────────────────────────────────
   const [agentsList, setAgentsList] = useState(() => computeAgentRatings(initialAgents));
-  const [favorites, setFavorites]   = useState(() => getSavedFavorites());
+  const [favorites, setFavorites] = useState(() => getSavedFavorites());
 
   // ── Filter state ─────────────────────────────────────────────────────────────
-  const [query,               setQuery]               = useState("");
-  const [aiMatchedIds,        setAiMatchedIds]        = useState(null);
-  const [aiReason,            setAiReason]            = useState("");
-  const [isAiSearching,       setIsAiSearching]       = useState(false);
-  const [selectedFavFilters,  setSelectedFavFilters]  = useState([]);
+  const [query, setQuery] = useState("");
+  const [aiMatchedIds, setAiMatchedIds] = useState(null);
+  const [aiReason, setAiReason] = useState("");
+  const [isAiSearching, setIsAiSearching] = useState(false);
+  const [selectedFavFilters, setSelectedFavFilters] = useState([]);
   const [selectedDepartments, setSelectedDepartments] = useState([]);
-  const [selectedTools,       setSelectedTools]       = useState([]);
-  const [selectedStatuses,    setSelectedStatuses]    = useState([]);
-  const [openPopover,         setOpenPopover]         = useState(null);
-  const [popoverSearch,       setPopoverSearch]       = useState("");
+  const [selectedTools, setSelectedTools] = useState([]);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [openPopover, setOpenPopover] = useState(null);
+  const [popoverSearch, setPopoverSearch] = useState("");
   const filterBarRef = useRef(null);
 
   // ── Modal / overlay state ────────────────────────────────────────────────────
-  const [selectedAgent,      setSelectedAgent]      = useState(null);
-  const [activeDemo,         setActiveDemo]         = useState(null);
-  const [feedbackModal,      setFeedbackModal]      = useState(null);
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [activeDemo, setActiveDemo] = useState(null);
+  const [feedbackModal, setFeedbackModal] = useState(null);
   const [highlightedAgentId, setHighlightedAgentId] = useState(null);
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────────
@@ -161,18 +164,18 @@ export default function App() {
       if (e.key === "Escape") { setOpenPopover(null); setPopoverSearch(""); }
     };
     document.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("keydown",   onKey);
+    document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("mousedown", onMouseDown);
-      document.removeEventListener("keydown",   onKey);
+      document.removeEventListener("keydown", onKey);
     };
   }, []);
 
   // ── Computed filter stats ─────────────────────────────────────────────────────
   const departmentCounts = useMemo(() => computeDepartmentCounts(agentsList), [agentsList]);
-  const toolsCounts      = useMemo(() => computeToolsCounts(agentsList),      [agentsList]);
-  const statusCounts     = useMemo(() => computeStatusCounts(agentsList),     [agentsList]);
-  const trendingCount    = useMemo(() => agentsList.filter((a) => Boolean(a.isTrending)).length, [agentsList]);
+  const toolsCounts = useMemo(() => computeToolsCounts(agentsList), [agentsList]);
+  const statusCounts = useMemo(() => computeStatusCounts(agentsList), [agentsList]);
+  const trendingCount = useMemo(() => agentsList.filter((a) => Boolean(a.isTrending)).length, [agentsList]);
 
   // ── Filtered agent list ───────────────────────────────────────────────────────
   const sortedAndFilteredAgents = useMemo(
@@ -305,16 +308,16 @@ export default function App() {
 
   const handleSubmitRating = (agentId, ratingValue, userEmail, reviewText) => {
     saveRatingForAgent(agentId, {
-      email:     userEmail || "user@aurigene.com",
-      rating:    Number(ratingValue),
-      review:    reviewText || "",
+      email: userEmail || "user@aurigene.com",
+      rating: Number(ratingValue),
+      review: reviewText || "",
       timestamp: Date.now(),
     });
 
     let updatedStats = null;
     setAgentsList((prev) => {
       const computed = recomputeRatings(prev);
-      const target   = computed.find((a) => a.id === agentId);
+      const target = computed.find((a) => a.id === agentId);
       if (target) updatedStats = { rating: target.rating, reviews: target.reviews };
       return computed;
     });
@@ -323,10 +326,10 @@ export default function App() {
 
   const handleLocateAgent = (agentId) => {
     // Clear any search / filters that might hide the agent card
-    if (query)                        { setQuery(""); setAiMatchedIds(null); setAiReason(""); }
-    if (selectedDepartments.length)   setSelectedDepartments([]);
-    if (selectedTools.length)         setSelectedTools([]);
-    if (selectedStatuses.length)      setSelectedStatuses([]);
+    if (query) { setQuery(""); setAiMatchedIds(null); setAiReason(""); }
+    if (selectedDepartments.length) setSelectedDepartments([]);
+    if (selectedTools.length) setSelectedTools([]);
+    if (selectedStatuses.length) setSelectedStatuses([]);
 
     setHighlightedAgentId(agentId);
 
@@ -377,10 +380,20 @@ export default function App() {
     return <UpcomingAgentsPage onNavigate={navigate} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />;
   }
 
+  if (route === "/stories") {
+    return (
+      <StoriesPage
+        onLaunchPortal={() => navigate("/")}
+        onNavigate={navigate}
+        isDarkMode={isDarkMode}
+      />
+    );
+  }
+
   // ── Default: Landing Page ─────────────────────────────────────────────────────
   return (
     <>
-      {showIntro && <IntroFlow onComplete={() => setShowIntro(false)} />}
+      {showIntro && <IntroFlow onComplete={() => setShowIntro(false)} onNavigate={navigate} />}
 
       <LandingPage
         isDarkMode={isDarkMode}

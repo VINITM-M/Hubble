@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Sparkles, Send, X, BarChart3, TrendingUp, Layers } from "lucide-react";
 import chatbotAvatar from "../../assets/chatbot-avatar.jpg";
-import { askTrackerChatbot } from "../../services/groqService.js";
+
+// Tracker chatbot endpoint removed
+async function askTrackerChatbot() {
+  return { reply: "Analytics chatbot is currently unavailable." };
+}
 
 export function TrackerChatbot({
   timeframe = "monthly",

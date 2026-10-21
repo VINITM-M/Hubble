@@ -20,7 +20,6 @@ import {
   Cpu,
   CreditCard,
   FileText,
-  Flame,
   Folder,
   Home,
   LayoutGrid,
@@ -36,23 +35,14 @@ import {
 } from "lucide-react";
 
 import hubblePngLogo from "../../assets/hubble.png";
-import aiHubbleLogo   from "../../assets/ai_hubble_logo.png";
-import { AgentCard }      from "./AgentCard.jsx";
-import { DetailsDrawer }  from "./DetailsDrawer.jsx";
-import { FeedbackModal }  from "./FeedbackModal.jsx";
-import { VideoModal }     from "../shared/VideoModal.jsx";
-import { Chatbot }        from "../chatbot/Chatbot.jsx";
+import aiHubbleLogo from "../../assets/ai_hubble_logo.png";
+import { AgentCard } from "./AgentCard.jsx";
+import { DetailsDrawer } from "./DetailsDrawer.jsx";
+import { FeedbackModal } from "./FeedbackModal.jsx";
+import { VideoModal } from "../shared/VideoModal.jsx";
+import { Chatbot } from "../chatbot/Chatbot.jsx";
 
-// ── Department quick-filter chip definitions ───────────────────────────────
-const DEPT_CHIPS = [
-  { name: "Project Management", icon: Folder },
-  { name: "Research & Analysis", icon: FileText },
-  { name: "Business Ops",        icon: BarChart3 },
-  { name: "Engineering",         icon: Wrench },
-  { name: "Marketing",           icon: Compass },
-  { name: "HR",                  icon: Users },
-  { name: "Finance",             icon: CreditCard },
-];
+
 
 export function LandingPage({
   // agent data
@@ -148,7 +138,6 @@ export function LandingPage({
               onClick={() => navigate("/upcoming")}
               title="Explore Next-Gen Upcoming Agents, Roadmaps, and System Prompts"
             >
-              <Sparkles size={16} className="sparkle-amber" />
               <span>Upcoming Agents</span>
             </button>
           </nav>
@@ -180,9 +169,7 @@ export function LandingPage({
       <main>
         {/* ────────────────────────── Discovery Hero ───────────────────── */}
         <section className="discovery-hero">
-          <div className="discovery-kicker">
-            <span className="kicker-pill">{sortedAndFilteredAgents.length} AGENTS</span>
-          </div>
+          {/* kicker pill removed per request */}
           <h1 className="discovery-headline">
             Discover AI Agents for{" "}
             <span className="highlight-text">Every Need from the Hub</span>
@@ -275,7 +262,7 @@ export function LandingPage({
                 <div className="popover-list">
                   {[
                     { id: "application", label: "Applications", count: toolsCounts.applications, icon: <Layers size={13} /> },
-                    { id: "agent",       label: "Agents",       count: toolsCounts.agents,       icon: <Cpu size={13} />   },
+                    { id: "agent", label: "Agents", count: toolsCounts.agents, icon: <Cpu size={13} /> },
                   ]
                     .filter((t) => t.label.toLowerCase().includes(popoverSearch.toLowerCase().trim()))
                     .map((item) => {
@@ -295,36 +282,6 @@ export function LandingPage({
                 </div>
               </DropdownFilter>
 
-              {/* Status dropdown */}
-              <DropdownFilter
-                id="status"
-                label="Status"
-                icon={<Activity size={15} className="dropdown-left-icon" />}
-                count={selectedStatuses.length}
-                isOpen={openPopover === "status"}
-                onToggle={() => { setOpenPopover(openPopover === "status" ? null : "status"); setPopoverSearch(""); }}
-              >
-                <div className="popover-list">
-                  {[
-                    { id: "available",   label: "Available",   count: statusCounts.available,   dotClass: "available" },
-                    { id: "coming-soon", label: "Coming Soon", count: statusCounts.comingSoon,  dotClass: "coming-soon" },
-                    { id: "tbd",         label: "TBD",         count: statusCounts.tbd,         dotClass: "tbd" },
-                  ].map((item) => {
-                    const isChecked = selectedStatuses.includes(item.id);
-                    return (
-                      <div key={item.id} className={`popover-item ${isChecked ? "checked" : ""}`} onClick={() => toggleStatus(item.id)}>
-                        <div className={`popover-checkbox ${isChecked ? "checked" : ""}`}>{isChecked && <Check size={11} strokeWidth={3} />}</div>
-                        <span className="popover-item-icon"><span className={`status-dot status-dot-${item.dotClass}`} /></span>
-                        <span className="popover-label">{item.label}</span>
-                        <span className="popover-count">{item.count}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="popover-footer">
-                  <button type="button" className="popover-clear-btn" onClick={() => toggleStatus("__clear__")}>Clear filters</button>
-                </div>
-              </DropdownFilter>
 
               {/* All Categories dropdown */}
               <DropdownFilter
@@ -337,8 +294,8 @@ export function LandingPage({
               >
                 <div className="popover-list">
                   {[
-                    { id: "favorites", label: "Saved Favorites", count: favorites.length,  icon: <Star size={13} fill={favorites.length > 0 ? "#f59e0b" : "none"} color="#f59e0b" /> },
-                    { id: "trending",  label: "Trending / Hot",  count: trendingCount,     icon: <Flame size={13} className="hot-flame-icon" /> },
+                    { id: "favorites", label: "Favorites", count: favorites.length, icon: <Star size={13} fill={favorites.length > 0 ? "#f59e0b" : "none"} color="#f59e0b" /> },
+                    { id: "trending", label: "Trending", count: trendingCount, icon: null },
                   ].map((item) => {
                     const isChecked = selectedFavFilters.includes(item.id);
                     return (
@@ -359,46 +316,13 @@ export function LandingPage({
             </div>
           </div>
 
-          {/* Row 2: Quick filter chips */}
-          <div className="discovery-quick-filters">
-            <div className="quick-filter-chips">
-              <button
-                type="button"
-                className={`chip-btn all-agents-chip ${isAllAgentsActive ? "active" : ""}`}
-                onClick={handleResetFilters}
-              >
-                <LayoutGrid size={14} />
-                <span>All Agents ({agentsList.length})</span>
-              </button>
-
-              <button
-                type="button"
-                className={`chip-btn ${selectedFavFilters.includes("favorites") ? "active" : ""}`}
-                onClick={() =>
-                  setSelectedFavFilters((prev) =>
-                    prev.includes("favorites") ? prev.filter((x) => x !== "favorites") : [...prev, "favorites"],
-                  )
-                }
-              >
-                <Star size={14} fill={selectedFavFilters.includes("favorites") ? "#f59e0b" : "none"} color={selectedFavFilters.includes("favorites") ? "#f59e0b" : "currentColor"} />
-                <span>Favorites</span>
-              </button>
-
-              {DEPT_CHIPS.map(({ name, icon: ChipIcon }) => {
-                const isSelected = selectedDepartments.includes(name);
-                return (
-                  <button key={name} type="button" className={`chip-btn ${isSelected ? "active" : ""}`} onClick={() => toggleDepartment(name)}>
-                    <ChipIcon size={14} />
-                    <span>{name}</span>
-                  </button>
-                );
-              })}
-            </div>
-
+          {/* Clear Filters link */}
+          <div className="discovery-clear-filters-row">
             <button type="button" className="clear-filters-link" onClick={handleResetFilters}>
               <RotateCcw size={14} /><span>Clear Filters</span>
             </button>
           </div>
+
 
           {/* AI Recommendation bar */}
           {Array.isArray(aiMatchedIds) && query && (
@@ -423,10 +347,11 @@ export function LandingPage({
           {/* Agent grid / empty states */}
           {sortedAndFilteredAgents.length ? (
             <div className="agent-grid">
-              {sortedAndFilteredAgents.map((agent) => (
+              {sortedAndFilteredAgents.map((agent, index) => (
                 <AgentCard
                   key={agent.id}
                   agent={agent}
+                  index={index}
                   onLaunch={handleLaunchAgent}
                   onOpenDemo={handleOpenDemo}
                   onOpenDetails={() => setSelectedAgent(agent)}
@@ -439,8 +364,8 @@ export function LandingPage({
           ) : selectedFavFilters.includes("favorites") && favorites.length === 0 ? (
             <div className="empty-state">
               <Star size={28} color="#f59e0b" fill="rgba(245, 158, 11, 0.2)" />
-              <h3>No saved favorites yet</h3>
-              <p>Click the ★ star icon on any agent card to save it to your personal favorites list.</p>
+              <h3>No favorites yet</h3>
+              <p>Click the ★ star icon on any agent card to add it to your favorites list.</p>
               <button type="button" className="popover-clear-btn" style={{ marginTop: 14, padding: "7px 16px", borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.2)", color: "#cbd5e1", cursor: "pointer" }} onClick={() => setSelectedFavFilters([])}>
                 Show All Agents
               </button>

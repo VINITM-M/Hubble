@@ -20,9 +20,9 @@ import {
   Copy,
   Cpu,
   ExternalLink,
-  Flame,
   Home,
   Layers,
+  Play,
   PlusCircle,
   Search,
   Send,
@@ -35,12 +35,16 @@ import {
 
 import hubblePngLogo from "../../assets/hubble.png";
 import aiHubbleLogo   from "../../assets/ai_hubble_logo.png";
+import tevaVideo      from "../../assets/Teva video recording.mp4";
 import { UPCOMING_AGENTS } from "../../models/upcomingAgents.js";
+import { CANONICAL_DEPARTMENTS } from "../../models/agents.js";
+import { VideoModal } from "../shared/VideoModal.jsx";
 
 export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMode }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
+  const [activeDemo, setActiveDemo] = useState(null);
 
   // Expanded prompt tabs: { [agentId]: "system" | "sample" | "cot" | "output" }
   const [activePromptTab, setActivePromptTab] = useState(() => {
@@ -92,23 +96,7 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
     email: "",
   });
 
-  const allEnterpriseDepts = [
-    "IPDO / Technology Transfer",
-    "Biologics R&D",
-    "Biologics Process Development",
-    "Downstream mAb Team",
-    "CDMO Biologics",
-    "Analytical R&D",
-    "Quality Assurance & Stability",
-    "Antibody Discovery / R&D",
-    "Chemical Process R&D (ROS)",
-    "Discovery Chemistry",
-    "Preclinical & In-Vivo",
-    "Project Management",
-    "Commercial Strategy & LeadGen",
-    "Enterprise AI Platforms",
-    "Cross-Functional / Other",
-  ];
+  const allEnterpriseDepts = CANONICAL_DEPARTMENTS;
 
   // Department Dropdown state
   const [isDeptDropdownOpen, setIsDeptDropdownOpen] = useState(false);
@@ -131,7 +119,8 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
   const departmentCounts = useMemo(() => {
     const counts = {};
     UPCOMING_AGENTS.forEach((a) => {
-      counts[a.department] = (counts[a.department] || 0) + 1;
+      const dept = (a.department || "General").trim();
+      counts[dept] = (counts[dept] || 0) + 1;
     });
     return Object.entries(counts)
       .map(([name, count]) => ({ name, count }))
@@ -152,13 +141,13 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
       if (!searchTerm.trim()) return true;
       const q = searchTerm.toLowerCase();
       return (
-        agent.name.toLowerCase().includes(q) ||
-        agent.codeName.toLowerCase().includes(q) ||
-        agent.tagline.toLowerCase().includes(q) ||
-        agent.department.toLowerCase().includes(q) ||
-        agent.category.toLowerCase().includes(q) ||
-        agent.prompts.systemPrompt.toLowerCase().includes(q) ||
-        agent.prompts.sampleUserPrompt.toLowerCase().includes(q)
+        (agent.name && agent.name.toLowerCase().includes(q)) ||
+        (agent.codeName && agent.codeName.toLowerCase().includes(q)) ||
+        (agent.tagline && agent.tagline.toLowerCase().includes(q)) ||
+        (agent.department && agent.department.toLowerCase().includes(q)) ||
+        (agent.category && agent.category.toLowerCase().includes(q)) ||
+        (agent.description && agent.description.toLowerCase().includes(q)) ||
+        (agent.highlights && agent.highlights.some((h) => h.toLowerCase().includes(q)))
       );
     });
   }, [searchTerm, selectedDept, selectedStatus]);
@@ -266,7 +255,6 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
             </button>
 
             <button type="button" className="nav-tab active">
-              <Sparkles size={17} className="sparkle-amber" />
               <span>Upcoming Agents</span>
             </button>
           </nav>
@@ -313,7 +301,7 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
       <section className="upcoming-hero">
         <div className="upcoming-hero-content">
           <div className="section-kicker">
-            <Sparkles size={14} /> NEXT-GENERATION ENTERPRISE ROADMAP
+            NEXT-GENERATION ENTERPRISE ROADMAP
           </div>
           <h2 className="upcoming-title">
             Upcoming AI Agents & Prototype Previews
@@ -412,10 +400,6 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
               </div>
             )}
           </div>
-
-          <div className="upcoming-count-badge">
-            Showing {filteredAgents.length} of {UPCOMING_AGENTS.length} Upcoming Agents
-          </div>
         </div>
       </div>
 
@@ -439,8 +423,6 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
           </div>
         ) : (
           filteredAgents.map((agent) => {
-            const isPromptOpen = expandedPrompts[agent.id] !== false;
-            const currentTab = activePromptTab[agent.id] || "system";
             const isVoted = votedMap[agent.id];
 
             return (
@@ -454,24 +436,9 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
                   </div>
                 </div>
 
-                {/* Title & Tagline */}
+                {/* Title */}
                 <div className="upcoming-title-area">
                   <h3 className="upcoming-agent-name">{agent.name}</h3>
-                  <p className="upcoming-agent-tagline">{agent.tagline}</p>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="progress-section">
-                  <div className="progress-label-row">
-                    <span>Engineering Completion</span>
-                    <strong>{agent.progressPercent}%</strong>
-                  </div>
-                  <div className="progress-bar-track">
-                    <div
-                      className={`progress-bar-fill ${agent.statusColor}`}
-                      style={{ width: `${agent.progressPercent}%` }}
-                    />
-                  </div>
                 </div>
 
                 {/* Description */}
@@ -492,132 +459,6 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
                   </ul>
                 </div>
 
-                {/* ──────────────── Prompts & Algorithm Inspector ──────────────── */}
-                <div className="prompt-inspector-box">
-                  <div
-                    className="prompt-inspector-header"
-                    onClick={() =>
-                      setExpandedPrompts((p) => ({ ...p, [agent.id]: !isPromptOpen }))
-                    }
-                  >
-                    <div className="inspector-title">
-                      <Code2 size={16} className="text-purple" />
-                      <span>Agent Prompt & Cognitive Algorithm</span>
-                      <span className="badge-inspect">Prompt Transparency</span>
-                    </div>
-
-                    <button type="button" className="toggle-expand-btn">
-                      {isPromptOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </button>
-                  </div>
-
-                  {isPromptOpen && (
-                    <div className="prompt-inspector-body">
-                      {/* Sub-tabs */}
-                      <div className="prompt-tabs-bar">
-                        <button
-                          type="button"
-                          className={`prompt-tab-btn ${currentTab === "system" ? "active" : ""}`}
-                          onClick={() =>
-                            setActivePromptTab((p) => ({ ...p, [agent.id]: "system" }))
-                          }
-                        >
-                          System Prompt
-                        </button>
-                        <button
-                          type="button"
-                          className={`prompt-tab-btn ${currentTab === "sample" ? "active" : ""}`}
-                          onClick={() =>
-                            setActivePromptTab((p) => ({ ...p, [agent.id]: "sample" }))
-                          }
-                        >
-                          Sample User Task
-                        </button>
-                        <button
-                          type="button"
-                          className={`prompt-tab-btn ${currentTab === "cot" ? "active" : ""}`}
-                          onClick={() =>
-                            setActivePromptTab((p) => ({ ...p, [agent.id]: "cot" }))
-                          }
-                        >
-                          Cognitive Steps (CoT)
-                        </button>
-                        <button
-                          type="button"
-                          className={`prompt-tab-btn ${currentTab === "output" ? "active" : ""}`}
-                          onClick={() =>
-                            setActivePromptTab((p) => ({ ...p, [agent.id]: "output" }))
-                          }
-                        >
-                          Expected Output
-                        </button>
-                      </div>
-
-                      {/* Tab Content Box */}
-                      <div className="prompt-content-view">
-                        <div className="prompt-code-actions">
-                          <span className="code-lang-tag">
-                            {currentTab === "system"
-                              ? "SYSTEM PROMPT"
-                              : currentTab === "sample"
-                                ? "USER INPUT QUERY"
-                                : currentTab === "cot"
-                                  ? "CHAIN OF THOUGHT"
-                                  : "STRUCTURED JSON"}
-                          </span>
-
-                          <button
-                            type="button"
-                            className="copy-prompt-btn"
-                            onClick={() => {
-                              const content =
-                                currentTab === "system"
-                                  ? agent.prompts.systemPrompt
-                                  : currentTab === "sample"
-                                    ? agent.prompts.sampleUserPrompt
-                                    : currentTab === "cot"
-                                      ? agent.prompts.chainOfThought
-                                      : agent.prompts.expectedOutputFormat;
-                              handleCopy(content, `${agent.id}-${currentTab}`);
-                            }}
-                          >
-                            {copiedKey === `${agent.id}-${currentTab}` ? (
-                              <>
-                                <Check size={13} className="text-emerald" /> Copied!
-                              </>
-                            ) : (
-                              <>
-                                <Copy size={13} /> Copy Content
-                              </>
-                            )}
-                          </button>
-                        </div>
-
-                        <pre className="prompt-code-block">
-                          <code>
-                            {currentTab === "system" && agent.prompts.systemPrompt}
-                            {currentTab === "sample" && agent.prompts.sampleUserPrompt}
-                            {currentTab === "cot" && agent.prompts.chainOfThought}
-                            {currentTab === "output" && agent.prompts.expectedOutputFormat}
-                          </code>
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Suggestion Feature Action */}
-                <div className="suggestion-feature-container">
-                  <button
-                    type="button"
-                    className="btn-suggestion-feature"
-                    onClick={() => handleOpenSuggestionModal(agent)}
-                  >
-                    <Sparkles size={14} className="sparkle-amber" />
-                    <span>Suggestion Feature</span>
-                  </button>
-                </div>
-
                 {/* Footer Actions */}
                 <div className="upcoming-card-footer">
                   <button
@@ -633,10 +474,11 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
 
                   <button
                     type="button"
-                    className="beta-access-btn"
-                    onClick={() => handleOpenAccessModal(agent)}
+                    className="demo-button upcoming-demo-btn"
+                    onClick={() => setActiveDemo({ videoUrl: agent.video || tevaVideo, title: agent.name })}
+                    title={`Watch Demo Video for ${agent.name}`}
                   >
-                    <Send size={14} /> Request Early Pilot Access
+                    <Play size={13} fill="currentColor" /> Demo Video
                   </button>
                 </div>
               </article>
@@ -927,6 +769,14 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
           </div>
         </div>
       )}
+
+      {/* ── Demo Video Modal ── */}
+      <VideoModal
+        isOpen={Boolean(activeDemo)}
+        videoUrl={activeDemo?.videoUrl}
+        title={activeDemo?.title}
+        onClose={() => setActiveDemo(null)}
+      />
     </div>
   );
 }

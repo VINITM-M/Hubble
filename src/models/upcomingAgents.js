@@ -1,353 +1,519 @@
 /**
  * models/upcomingAgents.js
  * ─────────────────────────────────────────────────────────────────────────────
- * Data catalog for upcoming next-generation AI agents, preview prototypes,
- * development roadmaps, and their underlying system prompts & cognitive algorithms.
+ * Data catalog for upcoming AI agents, preview prototypes, and development roadmaps.
+ * All card descriptions and highlights are written in clear, simple language.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
+import tevaVideo from "../assets/Teva video recording.mp4";
+
 export const UPCOMING_AGENTS = [
   {
-    id: "omnichem-synthesizer",
-    name: "OmniChem RetroSynthesizer AI",
-    codeName: "PROJECT-NEXUS",
-    tagline: "Autonomous multi-step retro-synthesis planning and green chemistry pathway optimizer",
-    department: "Pharma R&D",
-    category: "Generative Chemistry",
-    status: "Alpha Preview",
+    id: "lc-ms-ai-assistant",
+    name: "LC-MS AI Assistant",
+    codeName: "PROJECT-SPECTRA-MS",
+    tagline: "Automated liquid chromatography and mass spectrometry data interpretation",
+    department: "NBE team",
+    category: "Analytical Instrumentation",
+    status: "Coming Soon",
     statusColor: "purple",
-    releaseTarget: "Q4 2026",
-    progressPercent: 85,
-    architecture: "Groq Qwen-32B Fast Engine + ChemBERTa RAG Graph",
+    releaseTarget: "Q1 2027",
+    progressPercent: 70,
+    video: tevaVideo,
     description:
-      "OmniChem maps multi-step retro-synthetic disconnections for novel active pharmaceutical ingredients (APIs), factoring in commercially available precursors, atom economy, reaction yield benchmarks, and hazardous solvent minimization.",
+      "Speeds up liquid chromatography and mass spectrometry work. It reads instrument data automatically, finds key peaks, and creates clean test reports.",
     highlights: [
-      "Generates 5+ viable retro-synthetic disconnection trees in under 3 seconds",
-      "Calculates Process Mass Intensity (PMI) and green chemistry scores per route",
-      "Integrated with Aurigene internal compound registry and Reaxys commercial databases",
-      "Predicts byproduct profiles, protecting group strategies, and crystallization parameters",
+      "Reads raw LC-MS data files automatically",
+      "Speeds up daily laboratory testing workflows",
+      "Identifies chemical peaks and sample components",
+      "Creates clear summary reports for scientists",
     ],
-    latestUpdates: [
-      { date: "October 2026", note: "Validated retro-synthesis on 45 novel kinase inhibitor scaffolds with 94.2% chemist consensus" },
-      { date: "September 2026", note: "Integrated Groq-accelerated SMILES parsing reducing path calculation latency from 45s to 1.8s" },
-      { date: "August 2026", note: "Alpha container deployed to internal staging cluster for peer review" },
-    ],
-    upvotes: 248,
-    prompts: {
-      systemPrompt: `You are OmniChem RetroSynthesizer AI, an expert computational chemist and process development scientist.
-Your objective is to propose viable, robust, and cost-efficient retro-synthetic disconnection pathways for user-submitted target molecules.
-
-Guidelines:
-1. Always evaluate molecular complexity, chiral centers, and functional group compatibility.
-2. Prioritize commercially cataloged starting materials (Sigma-Aldrich, Enamine, eMolecules).
-3. Maximize atom economy; avoid toxic solvents (DCM, benzene) in favor of sustainable alternatives (2-MeTHF, CPME).
-4. For each disconnection step, provide: Reagents, Temperature/Solvent conditions, Estimated Yield (%), and Green Chemistry Score (1-10).
-5. Output structured JSON detailing the step-by-step synthetic forward tree.`,
-      sampleUserPrompt: `Target Molecule: 4-(4-fluorobenzyl)-N-(5-methyl-1H-pyrazol-3-yl)piperazine-1-carboxamide. Propose a scalable 3-step synthesis starting from commercially available precursors with high enantiomeric purity.`,
-      expectedOutputFormat: `{
-  "targetName": "Fluorobenzyl-pyrazolyl piperazine carboxamide",
-  "recommendedPathways": 2,
-  "steps": [
-    {
-      "step": 1,
-      "reactionType": "Nucleophilic Substitution / Reductive Amination",
-      "startingMaterials": ["4-fluorobenzaldehyde", "tert-butyl piperazine-1-carboxylate"],
-      "reagents": "NaBH(OAc)3, DCE, AcOH, rt, 4h",
-      "yield": "88%",
-      "greenScore": "8.5/10"
-    },
-    {
-      "step": 2,
-      "reactionType": "Boc Deprotection",
-      "reagents": "4M HCl in 1,4-dioxane, EtOAc, rt, 2h",
-      "yield": "96%",
-      "greenScore": "9.0/10"
-    },
-    {
-      "step": 3,
-      "reactionType": "Carbamate Coupling / Urea Formation",
-      "reagents": "5-methyl-1H-pyrazol-3-amine, CDI, DIPEA, THF, 60°C",
-      "yield": "82%",
-      "greenScore": "8.8/10"
-    }
-  ],
-  "overallYield": "69.3%",
-  "pmiScore": "14.2 kg waste/kg API"
-}`,
-      chainOfThought:
-        "1. Dissect target molecule at the central urea bond -> yields 4-(4-fluorobenzyl)piperazine and 5-methyl-1H-pyrazol-3-amine.\n2. Verify commercial availability of pyrazol-3-amine -> confirmed (available from key suppliers).\n3. Synthesize substituted piperazine via reductive amination of 4-fluorobenzaldehyde and Boc-piperazine.\n4. Form urea using CDI (carbonyl diimidazole) to avoid toxic phosgene.\n5. Optimize crystallization solvent (EtOAc/Heptane) for direct filtration.",
-    },
+    upvotes: 67,
   },
   {
-    id: "reguguard-sentinel",
-    name: "ReguGuard Autonomous Sentinel",
-    codeName: "PROJECT-AEGIS",
-    tagline: "Real-time regulatory dossier auditing against FDA 21 CFR Part 11, ICH, and EMA guidelines",
-    department: "Regulatory Affairs",
-    category: "Regulatory Intelligence",
-    status: "Beta Enrollment",
-    statusColor: "cyan",
-    releaseTarget: "Q4 2026",
-    progressPercent: 92,
-    architecture: "Llama-3.3 70B Fast Engine + 21 CFR Vector Graph",
-    description:
-      "ReguGuard continuously scans IND/NDA submissions, investigator brochures, and eCTD Module 3/4 documents to identify compliance gaps, formatting non-conformities, and terminology discrepancies before official health authority filing.",
-    highlights: [
-      "Scans 300+ page eCTD dossiers in under 12 seconds with instant audit checklist",
-      "Cross-verifies tabular values against source SAS statistical output datasets",
-      "Flags ambiguous clinical endpoints, undocumented acronyms, and missing audit trails",
-      "Generates pre-formatted FDA Form 483 Risk Assessment reports",
-    ],
-    latestUpdates: [
-      { date: "October 2026", note: "Enrolled 12 regulatory specialists in closed beta testing for eCTD Module 3 validation" },
-      { date: "September 2026", note: "Achieved 99.8% precision in detecting missing cross-references across multi-volume dossiers" },
-      { date: "August 2026", note: "Added EMA Clinical Trial Regulation (EU CTR 536/2014) compliance rule sets" },
-    ],
-    upvotes: 312,
-    prompts: {
-      systemPrompt: `You are ReguGuard Autonomous Sentinel, a senior regulatory auditor specialized in FDA, EMA, and ICH GCP quality systems.
-Your mission is to audit regulatory filings, clinical study reports (CSRs), and analytical validation protocols with zero tolerance for ambiguity.
-
-Audit Protocol:
-1. Validate terminology against standard CDISC MedDRA and CDASH taxonomies.
-2. Inspect for compliance with 21 CFR Part 11 electronic records, digital signatures, and audit trails.
-3. Check internal consistency: verify that numbers in CSR summary tables match the detailed statistical appendices.
-4. Categorize findings into: CRITICAL (filing blocker), MAJOR (deficiency query risk), and MINOR (editorial improvement).
-5. Provide actionable remediation text for each identified finding.`,
-      sampleUserPrompt: `Audit the following extract from our IND Section 3.2.P.5.1 Specifications for finished oral tablet formulation. Check for ICH Q6A compliance and missing impurity threshold justifications.`,
-      expectedOutputFormat: `{
-  "complianceSummary": {
-    "totalIssues": 2,
-    "critical": 0,
-    "major": 1,
-    "minor": 1,
-    "readinessScore": "87/100"
-  },
-  "findings": [
-    {
-      "severity": "MAJOR",
-      "section": "3.2.P.5.1 - Impurity Profile",
-      "issue": "Specified Degradant B listed at NMT 0.3% exceeds the ICH Q3B(R2) identification threshold (0.2%) without animal toxicological qualification reference.",
-      "remediation": "Provide citation to 28-day rat toxicity study #TX-2026-089 or tighten specification limit to NMT 0.20%."
-    },
-    {
-      "severity": "MINOR",
-      "section": "3.2.P.5.1 - Dissolution",
-      "issue": "Apparatus rotation speed designated as '50 rpm' without stating paddle apparatus type (USP 2).",
-      "remediation": "Clarify: 'USP Apparatus 2 (Paddle) at 50 rpm in 900 mL 0.1N HCl'."
-    }
-  ]
-}`,
-      chainOfThought:
-        "1. Parse input table against ICH Q6A decision trees for drug product release specifications.\n2. Compare daily dose threshold (50 mg/day) against ICH Q3B(R2) qualification limit (0.2% or 2 mg TDI).\n3. Flag 0.3% limit as an unqualified degradation product risk.\n4. Verify dissolution testing apparatus against USP <711> standards.\n5. Formulate remediation text ready for insertion into Module 3 dossier.",
-    },
-  },
-  {
-    id: "biopulse-clinical",
-    name: "BioPulse Clinical Maestro",
-    codeName: "PROJECT-STRATIFY",
-    tagline: "Autonomous patient cohort stratification and real-time adverse event signal detector",
-    department: "Clinical Operations",
-    category: "Clinical AI",
-    status: "Alpha Preview",
+    id: "protein-a-resin-optimization",
+    name: "AI-Guided Protein A Resin Selection & Process Optimization",
+    codeName: "PROJECT-CAPTURE-OPT",
+    tagline: "Predictive resin selection and dynamic process modeling",
+    department: "General",
+    category: "Downstream Bioprocessing",
+    status: "Coming Soon",
     statusColor: "emerald",
     releaseTarget: "Q1 2027",
-    progressPercent: 78,
-    architecture: "Groq Mixtral-8x7B + Med-PaLM Clinical Embedding",
+    progressPercent: 72,
+    video: tevaVideo,
     description:
-      "BioPulse monitors real-time patient electronic data capture (EDC) streams across clinical trial sites. It detects latent safety signals, computes dropout hazard ratios, and recommends cohort re-balancing strategies to prevent trial failures.",
+      "Helps scientists choose the best Protein A resin for antibody purification. It uses past experiment results to predict performance, saving hours of trial-and-error in the lab.",
     highlights: [
-      "Real-time safety signal detection 14 days earlier than standard pharmacovigilance batches",
-      "Dynamic propensity score matching for adaptive Phase II/III basket trials",
-      "Predicts protocol deviation likelihood based on historical site operational telemetry",
-      "Automates CIOMS I and MedWatch 3500A pre-population for expedited adverse event reporting",
+      "Recommends the right resin for your specific antibody",
+      "Predicts binding capacity and product recovery",
+      "Reduces trial-and-error testing in the lab",
+      "Improves purification yield and product purity",
     ],
-    latestUpdates: [
-      { date: "October 2026", note: "Simulated 25,000 synthetic patient visits with zero false-negative safety escalation triggers" },
-      { date: "September 2026", note: "Integrated SNOMED-CT clinical terminology mapping" },
-    ],
-    upvotes: 195,
-    prompts: {
-      systemPrompt: `You are BioPulse Clinical Maestro, an enterprise biostatistician and pharmacovigilance surveillance intelligence engine.
-Analyze clinical study safety signals and patient cohort metrics with clinical rigor.
-
-Responsibilities:
-1. Calculate disproportionality metrics: Proportional Reporting Ratio (PRR) and Empirical Bayes Geometric Mean (EBGM).
-2. Distinguish between expected disease progression vs true investigational drug adverse reactions.
-3. Recommend clinical trial protocol amendments or site-level targeted monitoring visits.
-4. Output concise clinical risk briefings with confidence intervals and recommended actions.`,
-      sampleUserPrompt: `Analyze adverse event report stream for Protocol ONC-402 (Phase 2 Solid Tumors). We observe 6 cases of Grade 3 elevated ALT/AST in Cohort B (dose 120mg) within 21 days of administration. Assess signal validity.`,
-      expectedOutputFormat: `{
-  "signalStatus": "CONFIRMED CLINICAL SAFETY SIGNAL",
-  "event": "Drug-Induced Liver Injury (DILI) / Hepatotoxicity Grade 3",
-  "cohort": "Cohort B (120 mg BID)",
-  "prr": 3.84,
-  "ebgmScore": 2.91,
-  "recommendations": [
-    "Immediate protocol safety pause for 120mg cohort pending safety monitoring committee review",
-    "Request baseline vs post-dose Hy's Law diagnostic panel (Total Bilirubin + Alk Phos)",
-    "Generate MedWatch 3500A narrative drafts for regulatory submission within 7 calendar days"
-  ]
-}`,
-      chainOfThought:
-        "1. Extract total exposed patients in Cohort B (N=24) -> 6 cases represents a 25% incidence.\n2. Compare against Cohort A (60mg, N=30, 1 case = 3.3%) -> clear dose-dependent response relationship.\n3. Calculate PRR: (6/24) / (1/30) = 7.5 (statistically significant safety signal exceeding threshold PRR > 2.0).\n4. Check for confounding concomitant medications (e.g., acetaminophen or antifungals).\n5. Formulate immediate clinical remediation guidance.",
-    },
+    upvotes: 51,
   },
   {
-    id: "spectravision-formulator",
-    name: "SpectraVision PeakDecon AI",
-    codeName: "PROJECT-RESONANCE",
-    tagline: "Automated HPLC, NMR, and Mass-Spec peak deconvolution and purity optimization",
-    department: "Process Chemistry",
-    category: "Analytical Spectroscopy",
-    status: "In Development",
+    id: "aurigene-ai-cdmo-biologics",
+    name: "Aurigene.AI",
+    codeName: "PROJECT-DEVELOPABILITY",
+    tagline: "Antibody developability assessment and candidate risk scoring",
+    department: "General",
+    category: "Biologics Development",
+    status: "Coming Soon",
+    statusColor: "blue",
+    releaseTarget: "Q4 2026",
+    progressPercent: 82,
+    video: tevaVideo,
+    description:
+      "Evaluates new antibody candidates early on to see if they are easy to manufacture. It flags potential stability and clumping issues before lab testing begins.",
+    highlights: [
+      "Checks antibody stability and structure early",
+      "Spots potential manufacturing risks in advance",
+      "Helps pick the strongest drug candidates",
+      "Cuts down on expensive experimental screening",
+    ],
+    upvotes: 89,
+  },
+  {
+    id: "bio-med",
+    name: "BioMed.AI Scientific Intelligence Platform",
+    codeName: "PROJECT-BIOMED",
+    tagline: "Cross-database scientific intelligence platform connecting literature and patents",
+    department: "General",
+    category: "Scientific Intelligence",
+    status: "Coming Soon",
+    statusColor: "purple",
+    releaseTarget: "Q4 2026",
+    progressPercent: 80,
+    video: tevaVideo,
+    description:
+      "Connects major scientific databases in one place so scientists can quickly find literature, patents, and clinical trial results to make better research decisions.",
+    highlights: [
+      "Searches scientific journals and global patents",
+      "Summarizes clinical trial results and patient safety",
+      "Finds toxicology and safety information quickly",
+      "Provides clear insights to guide research decisions",
+    ],
+    upvotes: 112,
+  },
+  {
+    id: "automated-analytical-report-generation",
+    name: "Automated Analytical Report Generation",
+    codeName: "PROJECT-AUTO-REPORT",
+    tagline: "Streamlined data extraction, automated calculations, and one-click report assembly",
+    department: "Analytical R&D",
+    category: "Analytical Reporting",
+    status: "Coming Soon",
+    statusColor: "cyan",
+    releaseTarget: "Q1 2027",
+    progressPercent: 68,
+    video: tevaVideo,
+    description:
+      "Extracts analytical testing data and calculates final numbers automatically. It turns raw lab results into clean, ready-to-share reports without manual typing.",
+    highlights: [
+      "Pulls data directly from lab instruments",
+      "Calculates numbers automatically to avoid human errors",
+      "Prepares standardized, audit-ready reports",
+      "Saves hours of manual copy-pasting for analysts",
+    ],
+    upvotes: 76,
+  },
+  {
+    id: "automated-protocol-generation",
+    name: "Automated Protocol Generation",
+    codeName: "PROJECT-AUTO-PROTOCOL",
+    tagline: "Template standardization and automated protocol drafting for analytical labs",
+    department: "Analytical R&D",
+    category: "Laboratory Protocols",
+    status: "Coming Soon",
     statusColor: "amber",
     releaseTarget: "Q1 2027",
     progressPercent: 65,
-    architecture: "Groq Llama-3.1-8B + Deep Chemometrics CNN",
+    video: tevaVideo,
     description:
-      "SpectraVision ingests raw chromatographic data files (Agilent ChemStation, Waters Empower) and automatically deconvolves overlapping peaks, calculates enantiomeric excess (ee%), and identifies trace co-eluting degradants in under 500ms.",
+      "Helps scientists create standardized analytical test protocols quickly. It fills in standard templates so lab procedures stay consistent and complete.",
     highlights: [
-      "Deconvolves shoulder peaks with peak resolution Rs < 0.8 with 99.1% baseline accuracy",
-      "Automates peak integration parameter tuning, eliminating analyst-to-analyst variability",
-      "Instant 1H-NMR multiplet splitting analysis and J-coupling constant calculation",
-      "Direct integration with laboratory LIMS for automated certificate of analysis (CoA) generation",
+      "Creates clear test protocols using approved templates",
+      "Keeps testing procedures consistent across teams",
+      "Pre-fills standard safety and instrument settings",
+      "Speeds up protocol review and sign-off",
     ],
-    latestUpdates: [
-      { date: "October 2026", note: "Completed benchmark on 10,000 chiral HPLC chromatograms against senior analytical chemists" },
-      { date: "August 2026", note: "Added support for high-resolution Q-TOF mass spectrum isotope pattern deconvolution" },
-    ],
-    upvotes: 184,
-    prompts: {
-      systemPrompt: `You are SpectraVision PeakDecon AI, a specialist analytical chemometrician and chromatography algorithm.
-Analyze raw spectroscopic and chromatographic peak profiles with sub-mAU precision.
-
-Capabilities:
-1. Apply Gaussian-Lorentzian hybrid peak deconvolution to unresolved retention times.
-2. Determine peak tailing factor (T), theoretical plates (N), and resolution (Rs) according to USP <621>.
-3. Calculate peak area percentages and quantify impurity thresholds with LOD/LOQ confidence levels.
-4. Provide structured chromatographic diagnostic reports.`,
-      sampleUserPrompt: `Analyze HPLC chromatogram for Batch #AP-2026-98: Main peak elutes at 4.52 min (Area 892,100), with a co-eluting shoulder peak detected at 4.71 min (Area 14,200). Calculate resolution Rs and assess if peak integration meets USP <621> criteria.`,
-      expectedOutputFormat: `{
-  "chromatographicAssessment": {
-    "mainPeakRt": 4.52,
-    "shoulderPeakRt": 4.71,
-    "deltaRt": 0.19,
-    "peakResolutionRs": 0.76,
-    "uspCompliant": false,
-    "status": "INCOMPLETE SEPARATION (Rs < 1.5)"
-  },
-  "recommendedAnalyticalAdjustment": [
-    "Decrease mobile phase B flow gradient by 0.5%/min between 3.5 - 6.0 minutes",
-    "Evaluate stationary phase swap from C18 to Phenyl-Hexyl for enhanced pi-pi secondary interaction",
-    "Reduce column compartment temperature from 40°C to 30°C to increase retention selectivity"
-  ]
-}`,
-      chainOfThought:
-        "1. Calculate retention time difference: 4.71 - 4.52 = 0.19 min.\n2. Estimate peak width at half-height (W0.5) from chromatographic peak model.\n3. Compute resolution Rs = 0.76 -> below required baseline resolution Rs >= 1.5.\n4. Diagnose cause: Co-elution of closely related diastereomer or degradation product.\n5. Recommend targeted gradient and column selectivity adjustments.",
-    },
+    upvotes: 61,
   },
   {
-    id: "supplychain-oracle",
-    name: "SupplyChain Oracle Gen-4",
-    codeName: "PROJECT-APEX",
-    tagline: "Predictive cold-chain API inventory routing and raw material disruption hedging",
-    department: "Supply Chain Analytics",
-    category: "Predictive Logistics",
-    status: "Beta Enrollment",
+    id: "stability-trend-analysis",
+    name: "Stability Trend Analysis & Prediction Assistant",
+    codeName: "PROJECT-STABILITY-AI",
+    tagline: "Automated stability trending, regression modeling, and shelf-life prediction",
+    department: "AR&D Z2",
+    category: "Stability & Shelf-Life",
+    status: "Coming Soon",
+    statusColor: "emerald",
+    releaseTarget: "Q1 2027",
+    progressPercent: 74,
+    video: tevaVideo,
+    description:
+      "Tracks drug shelf-life and stability data over time. It creates clear trend graphs and warns scientists early if a sample might degrade.",
+    highlights: [
+      "Tracks stability test results across different temperatures",
+      "Predicts shelf-life and degradation trends",
+      "Warns early if a batch is drifting off specification",
+      "Generates clean trend charts for regulatory review",
+    ],
+    upvotes: 48,
+  },
+  {
+    id: "qa-approval-support",
+    name: "QA Approval Support Agent",
+    codeName: "PROJECT-QA-APPROVAL",
+    tagline: "Automated vendor calibration certificate verification and master data auditing",
+    department: "Quality Assurance",
+    category: "Quality Compliance",
+    status: "Coming Soon",
     statusColor: "blue",
     releaseTarget: "Q4 2026",
-    progressPercent: 88,
-    architecture: "Groq Llama-3.3 70B + Graph Neural Supply Network",
+    progressPercent: 84,
+    video: tevaVideo,
     description:
-      "SupplyChain Oracle continuously models global geopolitical, weather, and supplier lead-time variables to prevent stockouts of critical starting materials (KSMs), active ingredients, and cold-chain temperature deviations.",
+      "Checks vendor equipment calibration certificates against company records. It spots missing info and verifies limits so QA can approve equipment faster.",
     highlights: [
-      "Simulates 10,000 supply disruption scenarios across Tier-1, Tier-2, and Tier-3 suppliers",
-      "Live cold-chain excursion risk monitoring using IoT logger telemetry",
-      "Dynamic safety stock optimization reducing inventory holding costs by 18%",
-      "Automated dual-sourcing purchase order dispatch upon lead-time threshold alerts",
+      "Reads vendor calibration documents automatically",
+      "Checks numbers against internal equipment tolerances",
+      "Highlights missing details or expired certificates",
+      "Helps QA approve equipment with less manual paperwork",
     ],
-    latestUpdates: [
-      { date: "October 2026", note: "Connected live maritime tracking API and Indian customs port delay telemetry" },
-      { date: "September 2026", note: "Tested on 3 commercial product lines resulting in 0 stockouts during raw material shortages" },
-    ],
-    upvotes: 215,
-    prompts: {
-      systemPrompt: `You are SupplyChain Oracle Gen-4, an enterprise supply chain architect and predictive procurement intelligence agent.
-Assess pharmaceutical raw material supply networks, port choke points, cold-chain integrity, and dual-sourcing economics.
-
-Core Directives:
-1. Evaluate supplier risk scores based on geopolitical, lead-time variance, and quality audit histories.
-2. Formulate immediate contingency rerouting for temperature-sensitive biologics and KSMs.
-3. Optimize Economic Order Quantity (EOQ) and dynamic buffer inventories.
-4. Output structured procurement risk assessments with financial impact and mitigation steps.`,
-      sampleUserPrompt: `Supplier in Dalian reports a 3-week delay for Key Starting Material #KSM-884 due to environmental safety inspection. Current Aurigene warehouse buffer is 18 days. Assess supply impact and provide mitigation plan.`,
-      expectedOutputFormat: `{
-  "riskLevel": "HIGH - INVENTORY RUPTURE IMMINENT",
-  "bufferDeficitDays": 3,
-  "productionBatchRisk": "Batches #B-104 and #B-105 of Commercial API scheduled for Nov 14 will face shutdown",
-  "contingencyPlan": [
-    "Activate secondary qualified supplier (Ami Life Sciences, Vadodara) for emergency 250kg order",
-    "Shift shipping mode from standard sea freight (22 days) to temperature-monitored air freight (4 days)",
-    "Reschedule non-urgent pilot batch #P-401 to preserve existing 18-day buffer for commercial supply",
-    "Net cost delta of air freight mitigation: +$14,200 vs potential plant idle penalty of $180,000"
-  ]
-}`,
-      chainOfThought:
-        "1. Calculate lead time: 3-week delay (21 days) vs available buffer (18 days) = 3 days negative inventory gap.\n2. Cross-reference production schedule -> 2 commercial batches scheduled inside the deficit window.\n3. Query ERP for qualified alternate vendors -> secondary vendor approved in Vadodara with 4-day delivery lead time.\n4. Calculate economic trade-off: Expedited air freight cost vs commercial plant idle penalty.\n5. Issue immediate procurement recommendation.",
-    },
+    upvotes: 55,
   },
   {
-    id: "autodocugen-medscribe",
-    name: "AutoDocuGen MedScribe",
-    codeName: "PROJECT-SYNAPSE",
-    tagline: "Multimodal automated protocol drafting, lab notebook synthesis, and audit log verification",
-    department: "CTO Operations",
-    category: "Medical NLP",
-    status: "Alpha Preview",
+    id: "life-sciences-platform-research",
+    name: "Research AI Assistant",
+    codeName: "PROJECT-TECH-RADAR",
+    tagline: "Life sciences emerging AI technology scanner and adoption opportunity benchmarking",
+    department: "DPEx",
+    category: "AI Strategy & Radar",
+    status: "Coming Soon",
+    statusColor: "amber",
+    releaseTarget: "Q1 2027",
+    progressPercent: 62,
+    video: tevaVideo,
+    description:
+      "Evaluates new software and AI tools for life sciences. It helps teams understand which new technologies are worth using in daily laboratory work.",
+    highlights: [
+      "Reviews new AI tools designed for biology and chemistry",
+      "Compares features, accuracy, and usability",
+      "Identifies practical tools that save time for scientists",
+      "Shares clear summaries to guide technology adoption",
+    ],
+    upvotes: 29,
+  },
+  {
+    id: "lab-of-the-future",
+    name: "Lab of the Future",
+    codeName: "PROJECT-SMART-LAB",
+    tagline: "Laboratory workflow orchestration, IoT telemetry, and digital lab operations",
+    department: "General",
+    category: "Smart Laboratory",
+    status: "Coming Soon",
+    statusColor: "cyan",
+    releaseTarget: "Q2 2027",
+    progressPercent: 60,
+    video: tevaVideo,
+    description:
+      "Connects laboratory devices and automated instruments so experiments run smoothly. It reduces manual instrument setup and keeps track of testing queues.",
+    highlights: [
+      "Connects lab instruments into unified workflows",
+      "Schedules machine time to keep equipment running",
+      "Automates repetitive steps in testing and sampling",
+      "Helps scientists track experiment progress remotely",
+    ],
+    upvotes: 73,
+  },
+  {
+    id: "process-platform-ros-retrosynthesis",
+    name: "Process.ai",
+    codeName: "PROJECT-PROCESS-ROS",
+    tagline: "Integrated route of synthesis planning and reaction condition exploration",
+    department: "Process-Engineering",
+    category: "Synthesis Automation",
+    status: "Coming Soon",
+    statusColor: "purple",
+    releaseTarget: "Q1 2027",
+    progressPercent: 70,
+    video: tevaVideo,
+    description:
+      "Helps process chemists plan step-by-step chemical synthesis routes. It explores practical reaction conditions and finds safe, readily available starting materials.",
+    highlights: [
+      "Suggests step-by-step routes to make target molecules",
+      "Finds commercially available starting chemicals",
+      "Recommends safe, practical reaction conditions",
+      "Connects directly with digital laboratory notebooks",
+    ],
+    upvotes: 46,
+  },
+  {
+    id: "in-vitro-ai-planner",
+    name: "In-vitro AI Planner",
+    codeName: "PROJECT-INVITRO-PLAN",
+    tagline: "Biological assay interpretation, plate layout optimization, and experimental planning",
+    department: "Invitro",
+    category: "Biological Assays",
+    status: "Coming Soon",
+    statusColor: "emerald",
+    releaseTarget: "Q1 2027",
+    progressPercent: 68,
+    video: tevaVideo,
+    description:
+      "Supports biology teams with test planning, plate layouts, and result analysis. It helps scientists organize experiments and interpret assay readings quickly.",
+    highlights: [
+      "Designs plate layouts to prevent experimental errors",
+      "Calculates dose-response numbers and curves automatically",
+      "Finds background information on cell lines and assays",
+      "Makes day-to-day lab planning simpler and faster",
+    ],
+    upvotes: 35,
+  },
+  {
+    id: "in-vivo-vivarium-planner",
+    name: "In-vivo planner",
+    codeName: "PROJECT-VIVARIUM",
+    tagline: "Vivarium scheduling, animal study allocation, and facility coordination",
+    department: "Animal House",
+    category: "Preclinical Operations",
+    status: "Coming Soon",
+    statusColor: "amber",
+    releaseTarget: "Q1 2027",
+    progressPercent: 66,
+    video: tevaVideo,
+    description:
+      "A scheduling tool that coordinates animal study timelines, facility room bookings, and dosing dates to keep preclinical research organized.",
+    highlights: [
+      "Schedules animal dosing and observation dates",
+      "Coordinates room and equipment reservations",
+      "Helps teams manage facility space and resources",
+      "Ensures study timelines follow regulatory guidelines",
+    ],
+    upvotes: 42,
+  },
+  {
+    id: "ai-platform-health-usage-dashboard",
+    name: "Health.AI",
+    codeName: "PROJECT-PLATFORM-HEALTH",
+    tagline: "Centralized AI platform telemetry, model latency monitoring, and usage analytics",
+    department: "DPEx",
+    category: "Platform Observability",
+    status: "Coming Soon",
+    statusColor: "emerald",
+    releaseTarget: "Q4 2026",
+    progressPercent: 88,
+    video: tevaVideo,
+    description:
+      "A central dashboard that tracks how AI tools are running across the company. It monitors system uptime, speeds, and daily user activity.",
+    highlights: [
+      "Monitors system health and keeps tools running 24/7",
+      "Tracks daily user activity and popular features",
+      "Measures response times to ensure fast performance",
+      "Alerts technical teams immediately if an issue arises",
+    ],
+    upvotes: 97,
+  },
+  {
+    id: "employee-navigator-agent",
+    name: "Employee Navigator Agent",
+    codeName: "PROJECT-HR-NAVIGATOR",
+    tagline: "Natural-language enterprise retrieval for HR policies, benefits, and onboarding",
+    department: "HR&Admin",
+    category: "Enterprise Knowledge",
+    status: "Coming Soon",
     statusColor: "purple",
     releaseTarget: "Q4 2026",
-    progressPercent: 91,
-    architecture: "Groq Qwen-32B + Vision-Language Protocol Encoder",
+    progressPercent: 85,
+    video: tevaVideo,
     description:
-      "AutoDocuGen converts unstructured lab notes, instrument raw data exports, and chemist voice memos into fully compliant, publication-ready Electronic Lab Notebook (ELN) entries and standard operating procedures (SOPs).",
+      "Helps employees find workplace information easily. Ask questions in simple English to quickly find HR policies, health benefits, and onboarding steps.",
     highlights: [
-      "Converts handwritten bench notes & TLC plate photos into formatted ALCOA+ compliant ELN records",
-      "Auto-generates reaction schemes, reagent stoichiometry tables, and NMR characterization sections",
-      "Enforces 100% adherence to corporate EHS (Environmental Health and Safety) risk phrasing",
-      "Cuts scientist documentation administrative burden by over 70%",
+      "Answers questions about leave, benefits, and company policies",
+      "Finds the right HR documents and forms in seconds",
+      "Guides new employees through onboarding checklists",
+      "Saves time by providing direct, accurate answers",
     ],
-    latestUpdates: [
-      { date: "October 2026", note: "Achieved 99.4% chemical structure recognition accuracy on photographed bench sketches" },
-      { date: "September 2026", note: "Integrated directly with PerkinElmer Signals and Dotmatics ELN endpoints" },
+    upvotes: 91,
+  },
+  {
+    id: "zen-ai",
+    name: "Zen AI",
+    codeName: "PROJECT-ZEN-SEARCH",
+    tagline: "Enterprise search engine surfacing unified knowledge across internal repositories",
+    department: "IT",
+    category: "Enterprise Search",
+    status: "Coming Soon",
+    statusColor: "blue",
+    releaseTarget: "Q4 2026",
+    progressPercent: 86,
+    video: tevaVideo,
+    description:
+      "A smart search tool that finds information across company files, slides, and reports. Type a question in plain English to get a clear answer with source links.",
+    highlights: [
+      "Searches company documents, slides, and shared files",
+      "Gives direct answers with links to the original files",
+      "Understands normal, everyday questions",
+      "Protects sensitive company information securely",
     ],
-    upvotes: 279,
-    prompts: {
-      systemPrompt: `You are AutoDocuGen MedScribe, an enterprise scientific documentation specialist and compliance engine.
-Transform raw laboratory bench notes, chemical quantities, and analytical summaries into formal, auditable GAMP-5 and ALCOA+ compliant Electronic Lab Notebook (ELN) entries.
+    upvotes: 119,
+  },
+  {
+    id: "capacitor-application",
+    name: "Reactor Capacity Planner",
+    codeName: "PROJECT-CAPACITOR",
+    tagline: "Centralized reactor availability and batch workload optimization",
+    department: "Program Management",
+    category: "Capacity & Production",
+    status: "Coming Soon",
+    statusColor: "cyan",
+    releaseTarget: "Q4 2026",
+    progressPercent: 80,
+    video: tevaVideo,
+    description:
+      "Helps project managers and plant teams track reactor capacity and availability across manufacturing sites to avoid scheduling conflicts and optimize production.",
+    highlights: [
+      "Monitors reactor availability across plant sites",
+      "Prevents scheduling conflicts and batch delays",
+      "Coordinates equipment maintenance plans",
+      "Helps teams plan production batches with confidence",
+    ],
+    upvotes: 62,
+  },
 
-Formatting Rules:
-1. Generate complete stoichiometry tables: Compound, MW, Equiv, Mass, Volume, Moles, Density, Purity.
-2. Write clear, passive-voice experimental procedures ('To a stirred solution of... was added...').
-3. Include EHS safety hazards and waste disposal guidelines for all chemicals used.
-4. Output structured Markdown with standardized experimental headings.`,
-      sampleUserPrompt: `Chemist note: "Charged 5g 4-bromoaniline to 100ml THF. Added 1.2 eq pinacol diboron, 5 mol% Pd(dppf)Cl2, 3 eq KOAc. Heated to 80C overnight. TLC showed complete conversion. Filtered through celite, concentrated, purified on silica (hex/EtOAc 9:1) got 5.8g white solid." Draft full formal ELN entry.`,
-      expectedOutputFormat: `### Experiment: Synthesis of 4-(4,4,5,5-tetramethyl-1,3,2-dioxaborolan-2-yl)aniline
-**Date:** Current System Date | **Notebook Ref:** ELN-2026-CH-0482
-
-#### Stoichiometry Table
-| Reagent | MW (g/mol) | Equiv | Amount | Moles | Safety Hazard |
-|:---|:---|:---|:---|:---|:---|
-| 4-Bromoaniline | 172.02 | 1.00 | 5.00 g | 29.06 mmol | Toxic, Irritant |
-| Bis(pinacolato)diboron | 253.94 | 1.20 | 8.85 g | 34.87 mmol | Irritant |
-| Pd(dppf)Cl2·CH2Cl2 | 816.64 | 0.05 | 1.18 g | 1.45 mmol | Carcinogen suspect |
-| Potassium Acetate (KOAc) | 98.15 | 3.00 | 8.56 g | 87.18 mmol | Low hazard |
-| Anhydrous THF | 72.11 | - | 100 mL | - | Highly flammable |
-
-#### Experimental Procedure
-A dry 250 mL two-necked round-bottom flask equipped with a reflux condenser and magnetic stir bar was charged with 4-bromoaniline (5.00 g, 29.06 mmol), bis(pinacolato)diboron (8.85 g, 34.87 mmol, 1.20 equiv), and potassium acetate (8.56 g, 87.18 mmol, 3.00 equiv) in anhydrous tetrahydrofuran (100 mL). The suspension was degassed with argon for 15 minutes, followed by the addition of [1,1'-bis(diphenylphosphino)ferrocene]dichloropalladium(II) complex with dichloromethane (1.18 g, 1.45 mmol, 0.05 equiv). The reaction mixture was heated to 80 °C under an inert atmosphere for 16 hours. TLC analysis (Hexanes/EtOAc 9:1) indicated complete consumption of starting material. The reaction was cooled to room temperature, filtered through a pad of Celite, and concentrated in vacuo. The crude residue was purified via flash column chromatography on silica gel (Hexanes/EtOAc 9:1) to afford the title compound as a white crystalline solid (5.80 g, 91.2% yield).`,
-      chainOfThought:
-        "1. Extract starting material: 4-bromoaniline (5g / 172.02 g/mol = 29.06 mmol).\n2. Calculate exact stoichiometric quantities for 1.2 eq B2pin2, 3 eq KOAc, 5 mol% Pd catalyst.\n3. Formulate GAMP-compliant experimental text in rigorous formal chemical syntax.\n4. Calculate theoretical yield (29.06 mmol * 219.09 g/mol = 6.36 g) -> 5.8g obtained = 91.2% yield.\n5. Append safety and disposal instructions for hazardous heavy metal catalyst waste.",
-    },
+  {
+    id: "leadgen-agent",
+    name: "LeadGen Agent",
+    codeName: "PROJECT-LEADGEN",
+    tagline: "Automated client discovery and business outreach",
+    department: "General",
+    category: "Commercial Growth",
+    status: "Coming Soon",
+    statusColor: "emerald",
+    releaseTarget: "Q1 2027",
+    progressPercent: 78,
+    video: tevaVideo,
+    description:
+      "Helps commercial teams discover potential clients and draft personalized outreach. It tracks company movements and creates account intelligence briefs.",
+    highlights: [
+      "Finds potential biotechnology partners and clients",
+      "Drafts personalized outreach and follow-up emails",
+      "Tracks mergers, acquisitions, and executive moves",
+      "Builds concise client profile summaries",
+    ],
+    upvotes: 68,
+  },
+  {
+    id: "transportation-agent",
+    name: "Employee Transportation Tracker",
+    codeName: "PROJECT-TRANSIT",
+    tagline: "Real-time employee shuttle tracking and automated seat allocation",
+    department: "HR&Admin",
+    category: "Workplace Logistics",
+    status: "Coming Soon",
+    statusColor: "blue",
+    releaseTarget: "Q4 2026",
+    progressPercent: 82,
+    video: tevaVideo,
+    description:
+      "Tracks company shuttle buses in real time and lets employees book seats by shift. It sends WhatsApp notifications on bus locations and arrival times.",
+    highlights: [
+      "Provides live GPS tracking for company shuttle buses",
+      "Lets employees reserve seats for their work shifts",
+      "Sends timely WhatsApp alerts on bus arrival times",
+      "Helps HR manage commuter routes and schedules",
+    ],
+    upvotes: 74,
+  },
+  {
+    id: "translator-agent",
+    name: "Translator Agent",
+    codeName: "PROJECT-TRANSLATE",
+    tagline: "Scientific translation preserving terminology and structure",
+    department: "General",
+    category: "Scientific Translation",
+    status: "Coming Soon",
+    statusColor: "rose",
+    releaseTarget: "Q1 2027",
+    progressPercent: 75,
+    video: tevaVideo,
+    description:
+      "Translates complex regulatory and scientific documents across languages without losing technical accuracy or document formatting.",
+    highlights: [
+      "Translates technical texts across multiple languages",
+      "Preserves specialized pharmaceutical and chemical words",
+      "Maintains tables, charts, and document formatting",
+      "Helps international teams collaborate accurately",
+    ],
+    upvotes: 56,
+  },
+  {
+    id: "rfi-rfp-agent",
+    name: "RFI / RFP Agent",
+    codeName: "PROJECT-RFI-RFP",
+    tagline: "Automated proposal generation and commercial contract scoping",
+    department: "General",
+    category: "Commercial Proposals",
+    status: "Coming Soon",
+    statusColor: "amber",
+    releaseTarget: "Q1 2027",
+    progressPercent: 70,
+    video: tevaVideo,
+    description:
+      "Drafts responses for requests for information (RFI) and requests for proposals (RFP) by matching client requirements with company capabilities.",
+    highlights: [
+      "Fills standard RFI and RFP response templates quickly",
+      "Matches client requests with verified company capabilities",
+      "Checks proposal drafts for completeness and accuracy",
+      "Saves business development teams days of drafting time",
+    ],
+    upvotes: 63,
+  },
+  {
+    id: "sembly-agent",
+    name: "Sembly Agent",
+    codeName: "PROJECT-SEMBLY",
+    tagline: "Meeting transcription and action-item tracking",
+    department: "Program Management",
+    category: "Productivity AI",
+    status: "Coming Soon",
+    statusColor: "purple",
+    releaseTarget: "Q4 2026",
+    progressPercent: 88,
+    video: tevaVideo,
+    description:
+      "Captures discussions during project calls, creates accurate transcripts, and creates concise summaries with clear action items and owners.",
+    highlights: [
+      "Transcribes team meetings automatically and accurately",
+      "Extracts key decisions and next steps with assigned owners",
+      "Generates clear meeting summaries ready to share",
+      "Keeps project teams aligned on pending deliverables",
+    ],
+    upvotes: 95,
+  },
+  {
+    id: "meeting-assistant-agent",
+    name: "Meeting Assistant",
+    codeName: "PROJECT-MEETING-COPILOT",
+    tagline: "Structured meeting follow-ups and accountability tracking",
+    department: "Quality Assurance",
+    category: "Productivity AI",
+    status: "Coming Soon",
+    statusColor: "cyan",
+    releaseTarget: "Q4 2026",
+    progressPercent: 84,
+    video: tevaVideo,
+    description:
+      "Turns quality assurance and operational meetings into structured follow-ups, concise summaries, and accountable compliance tracking.",
+    highlights: [
+      "Converts review discussions into structured action items",
+      "Tracks due dates and accountable owners for tasks",
+      "Prepares audit-ready meeting summaries quickly",
+      "Follows up on overdue decisions to keep projects moving",
+    ],
+    upvotes: 82,
   },
 ];

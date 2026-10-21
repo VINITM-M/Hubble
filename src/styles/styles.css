@@ -48,7 +48,16 @@ a {
 
 .app-shell {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f0f7ff 0%, #f8fafc 380px, #f8fafc 100%);
+  background: #fafbfb;
+  color: #17191c;
+}
+
+.app-shell:not(.app-shell--dark) .header {
+  background: rgba(250, 251, 251, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
 }
 
 .header {
@@ -334,8 +343,8 @@ h1.discovery-headline {
 }
 
 .discovery-headline .highlight-text {
-  color: #2563eb;
-  -webkit-text-fill-color: #2563eb;
+  color: #1D5793;
+  -webkit-text-fill-color: #1D5793;
 }
 
 .discovery-subtitle {
@@ -587,6 +596,15 @@ h1.discovery-headline {
   color: #1d4ed8;
   text-decoration: underline;
 }
+
+/* Slim row that replaced the old chip-button bar */
+.discovery-clear-filters-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 4px 0 8px;
+}
+
 
 .brand {
   display: inline-flex;
@@ -1515,26 +1533,29 @@ h1.discovery-headline {
 .agent-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  gap: 30px;
   padding: 0;
+  position: relative;
 }
 
 @media (max-width: 1180px) {
   .agent-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px;
   }
 }
 
 @media (max-width: 768px) {
   .agent-grid {
     grid-template-columns: 1fr;
+    gap: 22px;
   }
 }
 
 .agent-card {
   background: #ffffff;
   border: 1px solid #eef2f6;
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -1559,6 +1580,117 @@ h1.discovery-headline {
 
 .agent-card.card-unavailable {
   opacity: 0.65;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   STORIES THEME: Main Landing Page Light Theme & Scroll Overlapping Effects
+   (Applicable to Light Mode Only — Dark Mode remains strictly preserved)
+   ────────────────────────────────────────────────────────────────────────── */
+.app-shell:not(.app-shell--dark) .agent-grid {
+  gap: 30px;
+  padding-bottom: 48px;
+}
+
+.app-shell:not(.app-shell--dark) .agent-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 20px;
+  padding: 26px;
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  position: relative;
+  min-height: 300px;
+  opacity: 0;
+  transform: translateY(36px) scale(0.97);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s ease,
+              border-color 0.25s ease;
+  will-change: transform, opacity;
+}
+
+.app-shell:not(.app-shell--dark) .agent-card.is-in-view {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition-delay: calc((var(--card-index, 0) % 3) * 90ms);
+}
+
+.app-shell:not(.app-shell--dark) .agent-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(29, 87, 147, 0.35);
+  box-shadow: 0 24px 50px -10px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(29, 87, 147, 0.25);
+}
+
+.app-shell:not(.app-shell--dark) .agent-icon-box {
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.app-shell:not(.app-shell--dark) .category-label {
+  color: #1D5793;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.app-shell:not(.app-shell--dark) .card-copy h3 {
+  color: #17191c;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.app-shell:not(.app-shell--dark) .card-copy p {
+  color: #64748b;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.app-shell:not(.app-shell--dark) .capability-chip {
+  background: #f1f5f9;
+  color: #1D5793;
+  border: 1px solid rgba(29, 87, 147, 0.12);
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.app-shell:not(.app-shell--dark) .launch-button {
+  background: #1D5793;
+  color: #ffffff;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px rgba(29, 87, 147, 0.28);
+  font-weight: 600;
+}
+
+.app-shell:not(.app-shell--dark) .launch-button:hover {
+  background: #164373;
+  box-shadow: 0 6px 20px rgba(29, 87, 147, 0.42);
+}
+
+.app-shell:not(.app-shell--dark) .demo-button {
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #1D5793;
+  font-weight: 500;
+}
+
+.app-shell:not(.app-shell--dark) .demo-button:hover {
+  background: #eff6ff;
+  border-color: #cbd5e1;
+}
+
+.app-shell:not(.app-shell--dark) .discovery-dropdown-btn {
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  font-weight: 500;
+}
+
+.app-shell:not(.app-shell--dark) .discovery-search-box {
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
 }
 
 .card-topline {
@@ -1764,7 +1896,7 @@ h1.discovery-headline {
   min-width: unset;
   padding: 0 16px;
   border-radius: 8px;
-  background: #2563eb;
+  background: #1D5793;
   border: none;
   color: #ffffff;
   font-size: 12.5px;
@@ -1779,9 +1911,9 @@ h1.discovery-headline {
 }
 
 .launch-button:not(.disabled):hover {
-  background: #1d4ed8;
+  background: #164373;
   transform: none;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 2px 8px rgba(29, 87, 147, 0.4);
   filter: none;
 }
 
@@ -4555,14 +4687,14 @@ h1.discovery-headline {
 
 
 
-/* Demo Button */
+/* Demo Button — matches Launch Agent button color */
 .demo-button {
   height: 36px;
   padding: 0 14px;
   border-radius: 8px;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  color: #2563eb;
+  background: #1D5793;
+  border: none;
+  color: #ffffff;
   font-size: 12.5px;
   font-weight: 600;
   display: inline-flex;
@@ -4575,11 +4707,11 @@ h1.discovery-headline {
 }
 
 .demo-button:hover {
-  background: #dbeafe;
-  border-color: #bfdbfe;
-  color: #1d4ed8;
+  background: #164373;
+  border-color: transparent;
+  color: #ffffff;
   transform: none;
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgba(29, 87, 147, 0.4);
 }
 
 .demo-button.wide {
@@ -4606,24 +4738,34 @@ h1.discovery-headline {
 .badge.hot-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: #fff7ed;
-  border: 1px solid #ffedd5;
-  border-radius: 9999px;
-  color: #ea580c;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: normal;
-  text-transform: none;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
   box-shadow: none;
   user-select: none;
+  line-height: 1;
 }
 
-.hot-flame-icon {
-  color: #ea580c;
-  fill: #ea580c;
-  animation: none;
+.trending-icon-img {
+  width: 19px;
+  height: 19px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  /* Tint black PNG into vibrant theme-matching orange-amber #ea580c */
+  filter: invert(44%) sepia(90%) saturate(1750%) hue-rotate(360deg) brightness(96%) contrast(93%);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease;
+}
+
+.badge.hot-tag:hover .trending-icon-img {
+  transform: scale(1.14);
+  filter: invert(53%) sepia(85%) saturate(2200%) hue-rotate(360deg) brightness(102%) contrast(98%);
+}
+
+.app-shell--dark .trending-icon-img {
+  filter: invert(65%) sepia(85%) saturate(1600%) hue-rotate(345deg) brightness(105%) contrast(98%);
 }
 
 /* Save / Favorite Button on Card */
@@ -6099,10 +6241,9 @@ html.dark-mode body {
 }
 
 .app-shell--dark .discovery-headline .highlight-text {
-  background: linear-gradient(135deg, #38bdf8, #818cf8) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
+  color: #1D5793 !important;
+  -webkit-text-fill-color: #1D5793 !important;
+  background: none !important;
 }
 
 .app-shell--dark .discovery-subtitle {
@@ -6272,21 +6413,21 @@ html.dark-mode body {
   color: #64748b !important;
 }
 
-/* Demo button */
+/* Demo button — matches launch button color in dark mode too */
 .app-shell--dark .demo-button {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  color: #94a3b8 !important;
+  background: #1D5793 !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
 }
 
 .app-shell--dark .demo-button:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #f1f5f9 !important;
+  background: #164373 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(29, 87, 147, 0.5) !important;
 }
 
 /* Hot / trending badge */
 .app-shell--dark .badge.hot-tag {
-  background: rgba(245, 158, 11, 0.15) !important;
   color: #f59e0b !important;
 }
 
@@ -7489,6 +7630,30 @@ html.dark-mode body {
   transform: translateY(-1px);
 }
 
+.upcoming-demo-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #1D5793;
+  border: 1px solid rgba(29, 87, 147, 0.6);
+  color: #ffffff !important;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(29, 87, 147, 0.35);
+}
+
+.upcoming-demo-btn:hover {
+  background: #164373;
+  box-shadow: 0 4px 16px rgba(29, 87, 147, 0.5);
+  transform: translateY(-1px);
+}
+
 /* ── Early Access Modal ── */
 .access-modal-sheet {
   background: #0f172a;
@@ -7894,7 +8059,8 @@ html.dark-mode body {
 
 .upcoming-dept-dropdown-wrapper .faceted-popover {
   top: calc(100% + 8px);
-  left: 0;
+  right: 0;
+  left: auto;
   width: 290px;
 }
 

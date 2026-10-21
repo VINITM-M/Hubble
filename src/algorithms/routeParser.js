@@ -35,6 +35,10 @@ export function parseRoute(pathname) {
     return { route: "/tracker", agentId: null, deptName: null };
   }
 
+  if (lower.startsWith("/stories") || lower.startsWith("/story")) {
+    return { route: "/stories", agentId: null, deptName: null };
+  }
+
   if (lower.startsWith("/upcoming") || lower.startsWith("/preview-agents") || lower.startsWith("/preview")) {
     return { route: "/upcoming", agentId: null, deptName: null };
   }

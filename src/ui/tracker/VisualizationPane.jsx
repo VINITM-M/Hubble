@@ -5,7 +5,6 @@ import {
   Clock,
   Cpu,
   Coins,
-  Flame,
   User,
   Users,
   Zap,
@@ -523,7 +522,7 @@ export function VisualizationPane({
               <h4 className="lb-title">Who Used The Most</h4>
             </div>
             <span className="lb-badge-timeframe">
-              <Flame size={13} /> {timeframe.toUpperCase()}
+              <TrendingUp size={13} /> {timeframe.toUpperCase()}
             </span>
           </div>
 
