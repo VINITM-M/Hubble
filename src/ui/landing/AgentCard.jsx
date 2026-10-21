@@ -14,13 +14,12 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { ArrowRight, Play, Star } from "lucide-react";
 import trendingIcon from "../../assets/trending-48.png";
 
 export function AgentCard({
   agent,
-  index = 0,
   onLaunch,
   onOpenDemo,
   onOpenDetails,
@@ -31,26 +30,6 @@ export function AgentCard({
   const isImageIcon = typeof agent.icon === "string";
   const Icon        = !isImageIcon ? agent.icon : null;
   const disabled    = agent.primary.status !== "Available";
-
-  const cardRef = useRef(null);
-  const [isInView, setIsInView] = useState(false);
-
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-        }
-      },
-      { threshold: 0.12 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const row = Math.floor(index / 3);
 
   // Trim capability tags to 3 words max each, show first 3
   const tags = useMemo(() => {
@@ -66,10 +45,8 @@ export function AgentCard({
 
   return (
     <article
-      ref={cardRef}
       id={`agent-card-${agent.id}`}
-      style={{ "--card-index": index, "--card-row": row }}
-      className={`agent-card accent-${agent.accent || "blue"} ${isInView ? "is-in-view" : ""} ${isHighlighted ? "card-highlight-active" : ""} ${disabled ? "card-unavailable" : ""}`}
+      className={`agent-card accent-${agent.accent || "blue"} ${isHighlighted ? "card-highlight-active" : ""} ${disabled ? "card-unavailable" : ""}`}
     >
       {/* Top row: icon + badges + favorite */}
       <div className="card-topline">

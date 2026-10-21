@@ -347,11 +347,10 @@ export function LandingPage({
           {/* Agent grid / empty states */}
           {sortedAndFilteredAgents.length ? (
             <div className="agent-grid">
-              {sortedAndFilteredAgents.map((agent, index) => (
+              {sortedAndFilteredAgents.map((agent) => (
                 <AgentCard
                   key={agent.id}
                   agent={agent}
-                  index={index}
                   onLaunch={handleLaunchAgent}
                   onOpenDemo={handleOpenDemo}
                   onOpenDetails={() => setSelectedAgent(agent)}
