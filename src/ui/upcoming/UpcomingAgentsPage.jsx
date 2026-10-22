@@ -8,6 +8,12 @@
  */
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+
+gsap.registerPlugin(ScrollTrigger, SplitText);
 import {
   ArrowLeft,
   Building2,
@@ -34,13 +40,13 @@ import {
 } from "lucide-react";
 
 import hubblePngLogo from "../../assets/hubble.png";
-import aiHubbleLogo   from "../../assets/ai_hubble_logo.png";
-import tevaVideo      from "../../assets/Teva video recording.mp4";
+import aiHubbleLogo from "../../assets/ai_hubble_logo.png";
+import tevaVideo from "../../assets/Teva video recording.mp4";
 import { UPCOMING_AGENTS } from "../../models/upcomingAgents.js";
-import { CANONICAL_DEPARTMENTS } from "../../models/agents.js";
+import { CANONICAL_DEPARTMENTS, isDemoVideoEnabled } from "../../models/agents.js";
 import { VideoModal } from "../shared/VideoModal.jsx";
 
-export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMode }) {
+export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
@@ -152,6 +158,125 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
     });
   }, [searchTerm, selectedDept, selectedStatus]);
 
+  const headlineRef = useRef(null);
+  const subtitleRef = useRef(null);
+
+  useGSAP(() => {
+    const headline = headlineRef.current;
+    const subtitle = subtitleRef.current;
+    if (!headline || !subtitle) return;
+
+    let splitH = null;
+    let splitS = null;
+    let cancelled = false;
+
+    const runAnimations = () => {
+      if (cancelled) return;
+
+      try {
+        // 1. HEADLINE: Horizontal character-by-character slide in (slowed to 2s)
+        splitH = new SplitText(headline, { type: "chars,words" });
+        if (splitH.chars.length) {
+          gsap.fromTo(
+            splitH.chars,
+            { opacity: 0, x: -20 },
+            {
+              opacity: 1,
+              x: 0,
+              stagger: 0.085,
+              duration: 3.0,
+              ease: "power2.out",
+            }
+          );
+        }
+      } catch {
+        gsap.fromTo(headline, { opacity: 0 }, { opacity: 1, duration: 3.0 });
+      }
+
+      try {
+        // 2. SUBTITLE: Fade + slide up line-by-line (slowed to 2s)
+        splitS = new SplitText(subtitle, { type: "lines" });
+        if (splitS.lines.length) {
+          gsap.fromTo(
+            splitS.lines,
+            { opacity: 0, y: 20 },
+            {
+              opacity: 1,
+              y: 0,
+              stagger: 0.45,
+              duration: 3.0,
+              ease: "power2.out",
+              delay: 0.5,
+            }
+          );
+        }
+      } catch {
+        gsap.fromTo(subtitle, { opacity: 0 }, { opacity: 1, duration: 3.0, delay: 0.5 });
+      }
+    };
+
+    document.fonts.ready.then(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => runAnimations());
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      try { if (splitH) splitH.revert(); } catch { }
+      try { if (splitS) splitS.revert(); } catch { }
+    };
+  }, []);
+
+  const gridRef = useRef(null);
+
+  // Stable key of visible agent IDs to prevent re-triggering entrance animation on upvote/tab change
+  const upcomingIdsKey = useMemo(
+    () => filteredAgents.map((a) => a.id).join(","),
+    [filteredAgents]
+  );
+
+  useGSAP(
+    () => {
+      const cards = gsap.utils.toArray(".upcoming-agent-card");
+      if (!cards.length) return;
+
+      // Group cards into rows based on responsive column layout
+      const cols = window.innerWidth <= 768 ? 1 : window.innerWidth <= 1180 ? 2 : 3;
+      const rows = [];
+      for (let i = 0; i < cards.length; i += cols) {
+        rows.push(cards.slice(i, i + cols));
+      }
+
+      rows.forEach((rowCards, rowIndex) => {
+        const isFirstRow = rowIndex === 0;
+
+        const tl = gsap.timeline(
+          isFirstRow
+            ? { delay: 0.2 }
+            : {
+              scrollTrigger: {
+                trigger: rowCards[0],
+                start: "top 88%",
+                toggleActions: "play none none none",
+              },
+            }
+        );
+
+        // Smooth slower glide up animation when scrolling (card goes up into position)
+        tl.from(rowCards, {
+          opacity: 0,
+          y: 35,
+          stagger: 0.15,
+          duration: 2.0,
+          ease: "power2.out",
+          clearProps: "transform",
+        });
+      });
+    },
+    { scope: gridRef, dependencies: [upcomingIdsKey] }
+  );
+
   const handleCopy = (text, key) => {
     navigator.clipboard?.writeText(text);
     setCopiedKey(key);
@@ -260,24 +385,6 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
           </nav>
 
           <div className="header-actions">
-            {/* ── Theme Toggle ── */}
-            {setIsDarkMode && (
-              <button
-                type="button"
-                className={`theme-toggle-btn${isDarkMode ? " dark" : ""}`}
-                onClick={() => setIsDarkMode((v) => !v)}
-                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                aria-label="Toggle theme"
-              >
-                <span className="theme-toggle-track">
-                  <span className="theme-toggle-thumb" />
-                </span>
-                <span className="theme-toggle-label">
-                  {isDarkMode ? "🌙 Dark" : "☀️ Light"}
-                </span>
-              </button>
-            )}
-
             <div className="user-avatar-pill" title="user@aurigene.com">
               <div className="avatar-circle">U</div>
             </div>
@@ -300,15 +407,11 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
       {/* ────────────────────────── Hero Section ────────────────────────── */}
       <section className="upcoming-hero">
         <div className="upcoming-hero-content">
-          <div className="section-kicker">
-            NEXT-GENERATION ENTERPRISE ROADMAP
-          </div>
-          <h2 className="upcoming-title">
-            Upcoming AI Agents & Prototype Previews
-          </h2>
-          <p className="upcoming-subtitle">
-            Experience tomorrow's enterprise AI capabilities before release. Inspect engineered system prompts,
-            examine multi-step cognitive reasoning algorithms, follow real-time engineering milestones, and vote for early pilot access.
+          <h1 ref={headlineRef} className="upcoming-title">
+            Upcoming AI Agents
+          </h1>
+          <p ref={subtitleRef} className="upcoming-subtitle">
+            Experience tomorrow's enterprise AI capabilities before release. Follow real-time engineering milestones, and vote for early pilot access.
           </p>
         </div>
       </section>
@@ -404,7 +507,7 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
       </div>
 
       {/* ────────────────────────── Agent Previews Grid ────────────────────────── */}
-      <main className="upcoming-main-grid">
+      <main className="upcoming-main-grid" ref={gridRef}>
         {filteredAgents.length === 0 ? (
           <div className="upcoming-empty-state">
             <Search size={40} className="empty-icon" />
@@ -427,59 +530,53 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false, setIsDarkMo
 
             return (
               <article key={agent.id} className="upcoming-agent-card">
-                {/* Department Header */}
+                {/* Department Header & Target */}
                 <div className="upcoming-dept-header">
                   <span className="category-label">{agent.department}</span>
                   <div className="release-target">
-                    <Clock size={13} />
                     <span>Target: <strong>{agent.releaseTarget}</strong></span>
                   </div>
                 </div>
 
-                {/* Title */}
+                {/* Agent Name */}
                 <div className="upcoming-title-area">
                   <h3 className="upcoming-agent-name">{agent.name}</h3>
                 </div>
 
-                {/* Description */}
+                {/* Description: 400-char plain paragraph with use case & problem solving */}
                 <p className="upcoming-desc">{agent.description}</p>
 
-                {/* Feature Highlights */}
-                <div className="highlights-box">
-                  <div className="box-title">
-                    <Zap size={14} className="text-amber" /> Key Engineering Innovations
-                  </div>
-                  <ul className="highlights-list">
-                    {agent.highlights.map((item, idx) => (
-                      <li key={idx}>
-                        <Check size={14} className="check-icon" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Footer Actions */}
+                {/* Footer Actions: Likes + Demo Video */}
                 <div className="upcoming-card-footer">
                   <button
                     type="button"
                     className={`upvote-btn ${isVoted ? "voted" : ""}`}
                     onClick={() => handleUpvote(agent.id)}
-                    title="Endorse and prioritize this agent"
+                    title="Likes"
                   >
-                    <ThumbsUp size={15} />
-                    <span>{upvotes[agent.id] || agent.upvotes}</span>
-                    <span className="upvote-sub">{isVoted ? "Endorsed!" : "Upvote"}</span>
+                    <ThumbsUp size={14} />
+                    <span>{upvotes[agent.id] || agent.upvotes} Likes</span>
                   </button>
 
-                  <button
-                    type="button"
-                    className="demo-button upcoming-demo-btn"
-                    onClick={() => setActiveDemo({ videoUrl: agent.video || tevaVideo, title: agent.name })}
-                    title={`Watch Demo Video for ${agent.name}`}
-                  >
-                    <Play size={13} fill="currentColor" /> Demo Video
-                  </button>
+                  {(() => {
+                    const hasDemo = isDemoVideoEnabled(agent);
+                    return (
+                      <button
+                        type="button"
+                        className={`demo-button upcoming-demo-btn ${!hasDemo ? "disabled" : ""}`}
+                        disabled={!hasDemo}
+                        onClick={() => {
+                          if (hasDemo) {
+                            setActiveDemo({ videoUrl: agent.video || tevaVideo, title: agent.name });
+                          }
+                        }}
+                        title={hasDemo ? `Watch Demo Video for ${agent.name}` : "Demo video not available"}
+                        aria-disabled={!hasDemo}
+                      >
+                        <Play size={12} fill="currentColor" /> Demo Video
+                      </button>
+                    );
+                  })()}
                 </div>
               </article>
             );

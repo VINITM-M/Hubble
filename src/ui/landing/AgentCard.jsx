@@ -15,8 +15,8 @@
  */
 
 import React, { useMemo } from "react";
-import { ArrowRight, Play, Star } from "lucide-react";
-import trendingIcon from "../../assets/trending-48.png";
+import { ArrowRight, Bookmark, Play } from "lucide-react";
+import { isDemoVideoEnabled } from "../../models/agents.js";
 
 export function AgentCard({
   agent,
@@ -43,12 +43,16 @@ export function AgentCard({
     return ["Workflow AI", "Automation", "Intelligence"];
   }, [agent.cardTags, agent.capabilities]);
 
+  // Calmer, warm amber for saved/favorited state
+  const SAVE_COLOR = "#d97706";
+  const STAR_COLOR = "#f59e0b";
+
   return (
     <article
       id={`agent-card-${agent.id}`}
       className={`agent-card accent-${agent.accent || "blue"} ${isHighlighted ? "card-highlight-active" : ""} ${disabled ? "card-unavailable" : ""}`}
     >
-      {/* Top row: icon + badges + favorite */}
+      {/* Top row: icon + badges + favorite/save */}
       <div className="card-topline">
         <div
           className={`agent-icon-box accent-${agent.accent || "blue"}`}
@@ -65,22 +69,28 @@ export function AgentCard({
 
         <div className="card-topline-right">
           {agent.isTrending && (
-            <span className="badge hot-tag" title="Trending / Frequently Used">
-              <img src={trendingIcon} alt="Trending" className="trending-icon-img" />
+            <span className="product-badge badge-trending" title="Trending / Frequently Used">
+              Trending
+            </span>
+          )}
+          {(agent.isTopRated || agent.rating >= 4.7) && (
+            <span className="product-badge badge-top-rated" title="Top Rated Agent">
+              Top Rated
             </span>
           )}
           <button
             type="button"
             className={`favorite-btn ${isFavorited ? "is-favorited" : ""}`}
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(agent.id); }}
-            title={isFavorited ? "In Favorites (Click to remove)" : "Add to Favorites"}
-            aria-label={isFavorited ? "In Favorites" : "Add to Favorites"}
+            title={isFavorited ? "Saved (Click to remove)" : "Save agent"}
+            aria-label={isFavorited ? "Saved in Favorites" : "Save to Favorites"}
           >
-            <Star
+            <Bookmark
               size={14}
-              className="fav-star-icon"
-              fill={isFavorited ? "#f59e0b" : "none"}
-              color={isFavorited ? "#f59e0b" : "#94a3b8"}
+              className="fav-icon"
+              strokeWidth={2}
+              fill={isFavorited ? SAVE_COLOR : "none"}
+              color={isFavorited ? SAVE_COLOR : "#94a3b8"}
             />
           </button>
         </div>
@@ -93,57 +103,42 @@ export function AgentCard({
         <p>{agent.description}</p>
       </div>
 
-      {/* Capability chips */}
-      {tags.length > 0 && (
-        <div className="card-capability-chips">
-          {tags.map((tag, idx) => (
-            <span key={idx} className="capability-chip">{tag}</span>
-          ))}
-        </div>
-      )}
-
       {/* Footer: ratings + actions */}
       <div className="card-footer-container">
         <div className="card-ratings-row">
           <div className="card-ratings">
             <span className="card-ratings-score">{Number(agent.rating).toFixed(1)}</span>
-            <span className="card-ratings-stars">
-              {[1, 2, 3, 4, 5].map((s) => {
-                const full    = s <= Math.floor(agent.rating);
-                const partial = !full && s - 1 < agent.rating && agent.rating < s;
-                return (
-                  <svg key={s} viewBox="0 0 24 24" className={`star-svg ${full ? "star-full" : partial ? "star-partial" : "star-empty"}`}>
-                    {partial && (
-                      <defs>
-                        <linearGradient id={`pg-${agent.id}-${s}`}>
-                          <stop offset={`${(agent.rating - (s - 1)) * 100}%`} stopColor="#f59e0b" />
-                          <stop offset={`${(agent.rating - (s - 1)) * 100}%`} stopColor="transparent" />
-                        </linearGradient>
-                      </defs>
-                    )}
-                    <polygon
-                      points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                      fill={full ? "#f59e0b" : partial ? `url(#pg-${agent.id}-${s})` : "none"}
-                      stroke="#f59e0b"
-                      strokeWidth="1.5"
-                    />
-                  </svg>
-                );
-              })}
-            </span>
+            <svg viewBox="0 0 24 24" className="star-svg star-full" style={{ width: 14, height: 14 }} aria-hidden="true">
+              <polygon
+                points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                fill={STAR_COLOR}
+                stroke={STAR_COLOR}
+                strokeWidth="1.5"
+              />
+            </svg>
             <span className="card-ratings-count">({agent.reviews})</span>
           </div>
         </div>
 
         <div className="card-actions-row">
-          <button
-            type="button"
-            className="demo-button"
-            onClick={(e) => { e.stopPropagation(); onOpenDemo(agent); }}
-            title={`Watch Demo for ${agent.name}`}
-          >
-            <Play size={12} fill="currentColor" /> Demo
-          </button>
+          {(() => {
+            const hasDemo = isDemoVideoEnabled(agent);
+            return (
+              <button
+                type="button"
+                className={`demo-button ${!hasDemo ? "disabled" : ""}`}
+                disabled={!hasDemo}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (hasDemo) onOpenDemo(agent);
+                }}
+                title={hasDemo ? `Watch Demo for ${agent.name}` : "Demo video not available"}
+                aria-disabled={!hasDemo}
+              >
+                <Play size={12} fill="currentColor" /> Demo
+              </button>
+            );
+          })()}
 
           <a
             className={`launch-button ${disabled ? "disabled" : ""}`}

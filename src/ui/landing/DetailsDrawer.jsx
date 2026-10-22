@@ -14,8 +14,8 @@
  */
 
 import React from "react";
-import { ExternalLink, Play, Star, X } from "lucide-react";
-import trendingIcon from "../../assets/trending-48.png";
+import { Bookmark, ExternalLink, Play, X } from "lucide-react";
+import { isDemoVideoEnabled } from "../../models/agents.js";
 
 export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorited, onToggleFavorite }) {
   if (!agent) return null;
@@ -34,14 +34,15 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
             type="button"
             className={`favorite-btn drawer-fav-btn ${isFavorited ? "is-favorited" : ""}`}
             onClick={() => onToggleFavorite(agent.id)}
-            title={isFavorited ? "In Favorites (Click to remove)" : "Add to Favorites"}
-            aria-label={isFavorited ? "In Favorites" : "Add to Favorites"}
+            title={isFavorited ? "Saved (Click to remove)" : "Save agent"}
+            aria-label={isFavorited ? "Saved in Favorites" : "Save to Favorites"}
           >
-            <Star
+            <Bookmark
               size={16}
-              className="fav-star-icon"
-              fill={isFavorited ? "#f59e0b" : "none"}
-              color={isFavorited ? "#f59e0b" : "currentColor"}
+              className="fav-icon"
+              strokeWidth={2}
+              fill={isFavorited ? "#d97706" : "none"}
+              color={isFavorited ? "#d97706" : "currentColor"}
             />
           </button>
 
@@ -62,8 +63,13 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
 
           <div className="drawer-header-badges">
             {agent.isTrending && (
-              <span className="badge hot-tag" title="Trending / Frequently Used">
-                <img src={trendingIcon} alt="Trending" className="trending-icon-img" />
+              <span className="product-badge badge-trending" title="Trending / Frequently Used">
+                Trending
+              </span>
+            )}
+            {(agent.isTopRated || agent.rating >= 4.7) && (
+              <span className="product-badge badge-top-rated" title="Top Rated Agent">
+                Top Rated
               </span>
             )}
           </div>
@@ -114,9 +120,23 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
 
         {/* Actions */}
         <div className="drawer-actions" style={{ flexDirection: "column", gap: "10px" }}>
-          <button type="button" className="demo-button wide" onClick={() => onOpenDemo(agent)}>
-            <Play size={14} fill="currentColor" /> Watch Demo Video
-          </button>
+          {(() => {
+            const hasDemo = isDemoVideoEnabled(agent);
+            return (
+              <button
+                type="button"
+                className={`demo-button wide ${!hasDemo ? "disabled" : ""}`}
+                disabled={!hasDemo}
+                onClick={() => {
+                  if (hasDemo) onOpenDemo(agent);
+                }}
+                title={hasDemo ? `Watch Demo Video for ${agent.name}` : "Demo video not available"}
+                aria-disabled={!hasDemo}
+              >
+                <Play size={14} fill="currentColor" /> Watch Demo Video
+              </button>
+            );
+          })()}
           <a
             className={`launch-button wide ${!primaryEnabled ? "disabled" : ""}`}
             href={primaryEnabled ? agent.primary?.url : undefined}

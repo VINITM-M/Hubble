@@ -22,7 +22,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 70,
     video: tevaVideo,
     description:
-      "Speeds up liquid chromatography and mass spectrometry work. It reads instrument data automatically, finds key peaks, and creates clean test reports.",
+      
+      "Designed for analytical R&D laboratories processing complex liquid chromatography and mass spectrometry datasets. It automatically ingests raw instrument data files, identifies chemical peaks and sample components with high precision, and creates standardized, audit-ready summary reports. This eliminates hours of manual data transcription and peak integration, significantly accelerating daily testing workflows.",
     highlights: [
       "Reads raw LC-MS data files automatically",
       "Speeds up daily laboratory testing workflows",
@@ -44,7 +45,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 72,
     video: tevaVideo,
     description:
-      "Helps scientists choose the best Protein A resin for antibody purification. It uses past experiment results to predict performance, saving hours of trial-and-error in the lab.",
+      
+      "Engineered for downstream bioprocessing teams developing monoclonal antibodies and Fc-fusion proteins. It evaluates target molecule characteristics against historical purification datasets to predict binding capacity and recovery yields. By recommending optimal resin candidates and dynamic process parameters, it reduces costly trial-and-error laboratory iterations and improves product purity.",
     highlights: [
       "Recommends the right resin for your specific antibody",
       "Predicts binding capacity and product recovery",
@@ -66,7 +68,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 82,
     video: tevaVideo,
     description:
-      "Evaluates new antibody candidates early on to see if they are easy to manufacture. It flags potential stability and clumping issues before lab testing begins.",
+      
+      "Built for biologics development teams assessing candidate developability during early-stage lead selection. It analyzes structural sequences to identify high-risk liability spots such as aggregation propensity, post-translational modifications, and chemical instability. By flagging manufacturing bottlenecks before wet-lab testing begins, it enables scientists to prioritize the most viable therapeutic leads.",
     highlights: [
       "Checks antibody stability and structure early",
       "Spots potential manufacturing risks in advance",
@@ -88,7 +91,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 80,
     video: tevaVideo,
     description:
-      "Connects major scientific databases in one place so scientists can quickly find literature, patents, and clinical trial results to make better research decisions.",
+      
+      "Created for research scientists and cross-functional teams navigating fragmented biomedical discovery literature. It aggregates global scientific publications, patents, clinical trial databases, and toxicology datasets into a single conversational interface. The agent synthesizes cross-domain evidence to answer complex queries, accelerate mechanism-of-action validation, and guide strategic research decisions.",
     highlights: [
       "Searches scientific journals and global patents",
       "Summarizes clinical trial results and patient safety",
@@ -110,7 +114,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 68,
     video: tevaVideo,
     description:
-      "Extracts analytical testing data and calculates final numbers automatically. It turns raw lab results into clean, ready-to-share reports without manual typing.",
+      
+      "Designed for high-throughput testing laboratories burdened by manual data compilation and calculation workflows. It connects directly with laboratory analytical instruments to extract raw testing values, run automated mathematical calculations, and populate standardized compliance templates. This removes transcription errors, accelerates audit preparation, and delivers one-click report sign-offs.",
     highlights: [
       "Pulls data directly from lab instruments",
       "Calculates numbers automatically to avoid human errors",
@@ -132,7 +137,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 65,
     video: tevaVideo,
     description:
-      "Helps scientists create standardized analytical test protocols quickly. It fills in standard templates so lab procedures stay consistent and complete.",
+      
+      "Engineered for analytical and formulation laboratories requiring consistent and compliant test documentation. It converts experimental parameters into standardized testing protocols by referencing approved master templates, instrument settings, and safety guidelines. The agent ensures procedure uniformity across teams, eliminates missing procedural details, and accelerates quality review timelines.",
     highlights: [
       "Creates clear test protocols using approved templates",
       "Keeps testing procedures consistent across teams",
@@ -154,7 +160,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 74,
     video: tevaVideo,
     description:
-      "Tracks drug shelf-life and stability data over time. It creates clear trend graphs and warns scientists early if a sample might degrade.",
+      
+      "Built for formulation and quality teams monitoring long-term pharmaceutical shelf-life stability studies. It ingests time-series assay results across varying temperature and humidity chambers, applies regression models to forecast degradation kinetics, and flags out-of-trend anomalies early. This provides predictive visibility into product shelf-life and accelerates regulatory stability filing preparation.",
     highlights: [
       "Tracks stability test results across different temperatures",
       "Predicts shelf-life and degradation trends",
@@ -176,7 +183,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 84,
     video: tevaVideo,
     description:
-      "Checks vendor equipment calibration certificates against company records. It spots missing info and verifies limits so QA can approve equipment faster.",
+      
+      "Designed for quality assurance teams auditing incoming vendor documentation and laboratory equipment calibration certificates. It automatically ingests scanned vendor certificates, compares measured calibration tolerances against master equipment specifications, and flags discrepancies or expiring certifications. This eliminates manual paperwork and accelerates formal equipment release cycles.",
     highlights: [
       "Reads vendor calibration documents automatically",
       "Checks numbers against internal equipment tolerances",
@@ -198,7 +206,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 62,
     video: tevaVideo,
     description:
-      "Evaluates new software and AI tools for life sciences. It helps teams understand which new technologies are worth using in daily laboratory work.",
+      
+      "Created for digital transformation and R&D strategy teams evaluating emerging artificial intelligence and informatics platforms. It benchmarks state-of-the-art computational chemistry, molecular biology, and predictive modeling platforms based on published benchmarks, usability, and integration capability. This saves weeks of research time and delivers clear adoption recommendations for lab workflows.",
     highlights: [
       "Reviews new AI tools designed for biology and chemistry",
       "Compares features, accuracy, and usability",
@@ -220,7 +229,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 60,
     video: tevaVideo,
     description:
-      "Connects laboratory devices and automated instruments so experiments run smoothly. It reduces manual instrument setup and keeps track of testing queues.",
+      
+      "Engineered for modern laboratory operations managing distributed instrumentation, robotic samplers, and IoT sensors. It orchestrates equipment scheduling, monitors instrument runtime telemetry, and automates sample queue handoffs between preparation and analytical testing stations. By minimizing idle machine time and manual oversight, it enables laboratories to operate seamlessly around the clock.",
     highlights: [
       "Connects lab instruments into unified workflows",
       "Schedules machine time to keep equipment running",
@@ -242,7 +252,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 70,
     video: tevaVideo,
     description:
-      "Helps process chemists plan step-by-step chemical synthesis routes. It explores practical reaction conditions and finds safe, readily available starting materials.",
+      
+      "Designed for synthetic and process chemistry teams designing scalable routes of synthesis for complex drug candidates. It analyzes molecular targets to propose robust step-by-step synthetic pathways, identifies commercially available starting materials, and recommends safe reaction conditions. By ranking routes by atom economy and process safety, it expedites development from milligram to kilo scale.",
     highlights: [
       "Suggests step-by-step routes to make target molecules",
       "Finds commercially available starting chemicals",
@@ -264,7 +275,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 68,
     video: tevaVideo,
     description:
-      "Supports biology teams with test planning, plate layouts, and result analysis. It helps scientists organize experiments and interpret assay readings quickly.",
+      
+      "Created for biological screening and pharmacology laboratories running multi-plate biochemical and cellular assays. It optimizes microplate layouts to minimize edge effects, automates dilution series calculations, and calculates dose-response inhibition curves directly from plate-reader outputs. This reduces experimental errors, ensures reproducible assay execution, and accelerates lead screening cycles.",
     highlights: [
       "Designs plate layouts to prevent experimental errors",
       "Calculates dose-response numbers and curves automatically",
@@ -286,7 +298,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 66,
     video: tevaVideo,
     description:
-      "A scheduling tool that coordinates animal study timelines, facility room bookings, and dosing dates to keep preclinical research organized.",
+      
+      "Engineered for preclinical vivarium and animal pharmacology facilities coordinating multi-cohort in-vivo studies. It centralizes animal room bookings, manages dosing schedules, tracks observational milestones, and balances technician workloads across ongoing studies. By enforcing protocol compliance and study timelines, it ensures animal welfare standards while keeping project deliverables on schedule.",
     highlights: [
       "Schedules animal dosing and observation dates",
       "Coordinates room and equipment reservations",
@@ -308,7 +321,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 88,
     video: tevaVideo,
     description:
-      "A central dashboard that tracks how AI tools are running across the company. It monitors system uptime, speeds, and daily user activity.",
+      
+      "Built for enterprise IT and enterprise AI leadership overseeing computational agent infrastructure across the organization. It tracks model latency, API availability, token utilization, and departmental user engagement in real time. The agent alerts system administrators to performance bottlenecks, forecasts compute demand, and ensures reliable service levels for critical daily scientific workflows.",
     highlights: [
       "Monitors system health and keeps tools running 24/7",
       "Tracks daily user activity and popular features",
@@ -330,7 +344,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 85,
     video: tevaVideo,
     description:
-      "Helps employees find workplace information easily. Ask questions in simple English to quickly find HR policies, health benefits, and onboarding steps.",
+      
+      "Created for enterprise employees seeking quick and accurate answers to workplace, benefits, and administrative inquiries. It indexes internal company policies, healthcare benefit packages, leave structures, and onboarding workflows into a conversational assistant. Employees receive immediate, verified guidance in plain language without waiting for human HR intervention or searching through file drives.",
     highlights: [
       "Answers questions about leave, benefits, and company policies",
       "Finds the right HR documents and forms in seconds",
@@ -352,7 +367,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 86,
     video: tevaVideo,
     description:
-      "A smart search tool that finds information across company files, slides, and reports. Type a question in plain English to get a clear answer with source links.",
+      
+      "Designed for enterprise teams navigating vast internal repositories of unstructured presentations, technical reports, and documents. It securely indexes corporate knowledge systems to answer natural language questions with direct source citations and file references. By eliminating repetitive searches across siloed shared folders, it ensures that institutional knowledge is instantly discoverable.",
     highlights: [
       "Searches company documents, slides, and shared files",
       "Gives direct answers with links to the original files",
@@ -374,7 +390,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 80,
     video: tevaVideo,
     description:
-      "Helps project managers and plant teams track reactor capacity and availability across manufacturing sites to avoid scheduling conflicts and optimize production.",
+      
+      "Engineered for pharmaceutical manufacturing and program management teams balancing chemical reactor utilization. It tracks reactor volumes, operating temperature ranges, and cleaning schedules across production suites to eliminate scheduling conflicts. The agent models batch run sequences to maximize reactor throughput, optimize switchover turnaround, and safeguard delivery schedules for commercial clients.",
     highlights: [
       "Monitors reactor availability across plant sites",
       "Prevents scheduling conflicts and batch delays",
@@ -397,7 +414,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 78,
     video: tevaVideo,
     description:
-      "Helps commercial teams discover potential clients and draft personalized outreach. It tracks company movements and creates account intelligence briefs.",
+      
+      "Created for commercial business development and partnership teams expanding biotechnology client pipelines. It monitors industry therapeutic pipelines, executive appointments, and licensing deals to identify potential biopharma partners seeking development services. The agent synthesizes targeted account briefs and drafts personalized outreach, saving commercial teams days of manual market research.",
     highlights: [
       "Finds potential biotechnology partners and clients",
       "Drafts personalized outreach and follow-up emails",
@@ -419,7 +437,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 82,
     video: tevaVideo,
     description:
-      "Tracks company shuttle buses in real time and lets employees book seats by shift. It sends WhatsApp notifications on bus locations and arrival times.",
+      
+      "Designed for workplace operations and human resources teams managing corporate employee shuttle networks. It tracks commuter vehicle GPS telemetry in real time, automates seat reservation allocations based on plant shift rotations, and dispatches route updates via messaging alerts. This optimizes transport fleet routes, prevents vehicle crowding, and ensures timely daily commutes for manufacturing shifts.",
     highlights: [
       "Provides live GPS tracking for company shuttle buses",
       "Lets employees reserve seats for their work shifts",
@@ -441,7 +460,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 75,
     video: tevaVideo,
     description:
-      "Translates complex regulatory and scientific documents across languages without losing technical accuracy or document formatting.",
+      
+      "Engineered for international regulatory and clinical operations teams processing cross-border pharmaceutical filings. It translates technical dossiers, patent specifications, and clinical study reports across global languages while strictly preserving scientific nomenclature, dosage units, and table formatting. This eliminates translation ambiguities and accelerates international regulatory submission reviews.",
     highlights: [
       "Translates technical texts across multiple languages",
       "Preserves specialized pharmaceutical and chemical words",
@@ -463,7 +483,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 70,
     video: tevaVideo,
     description:
-      "Drafts responses for requests for information (RFI) and requests for proposals (RFP) by matching client requirements with company capabilities.",
+      
+      "Built for commercial bidding and proposals teams responding to complex technical requests for information and proposals. It parses incoming client RFP requirements, matches scope needs with verified historical capabilities and equipment specifications, and drafts complete proposal responses. This ensures high-accuracy bidding, reduces proposal turnaround from weeks to hours, and boosts client win rates.",
     highlights: [
       "Fills standard RFI and RFP response templates quickly",
       "Matches client requests with verified company capabilities",
@@ -485,7 +506,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 88,
     video: tevaVideo,
     description:
-      "Captures discussions during project calls, creates accurate transcripts, and creates concise summaries with clear action items and owners.",
+      
+      "Designed for cross-functional project teams managing multi-stakeholder scientific and operational meetings. It transcribes discussions in real time, distinguishes technical terminology, and extracts actionable decisions along with assigned owners and target due dates. By delivering clear, concise meeting briefs immediately after calls, it keeps project timelines synchronized and eliminates follow-up confusion.",
     highlights: [
       "Transcribes team meetings automatically and accurately",
       "Extracts key decisions and next steps with assigned owners",
@@ -507,7 +529,8 @@ export const UPCOMING_AGENTS = [
     progressPercent: 84,
     video: tevaVideo,
     description:
-      "Turns quality assurance and operational meetings into structured follow-ups, concise summaries, and accountable compliance tracking.",
+      
+      "Engineered for quality assurance and regulatory review panels conducting formal governance and audit review sessions. It records review discussions, logs compliance approvals, structures documented follow-up requirements, and automatically prepares audit-ready meeting minutes. This provides an auditable compliance trail, keeps review boards aligned, and ensures timely resolution of open regulatory items.",
     highlights: [
       "Converts review discussions into structured action items",
       "Tracks due dates and accountable owners for tasks",

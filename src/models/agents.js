@@ -58,7 +58,7 @@ export const initialAgents = [
     type: "agent",
     department: "Analytical R&D",
     description:
-      "A knowledge-grounded AI assistant that enables R&D scientists to query antibody literature in natural language, retrieving verified, source-backed answers to accelerate discovery and research.",
+      "Designed for analytical R&D teams investigating therapeutic monoclonal antibodies and literature corpora. It enables scientists to query complex antibody research in natural language, retrieving verified citations and source-grounded answers. This eliminates tedious manual literature screening and accelerates candidate identification workflows across scientific research programs.",
     detailedDescription:
       "A knowledge-grounded AI assistant empowering R&D scientists to query complex antibody research in natural language. It interprets specialized scientific literature to retrieve grounded, source-backed answers—accelerating discovery workflows and eliminating hours of manual literature review.",
     icon: Search,
@@ -66,6 +66,7 @@ export const initialAgents = [
     accent: "violet",
     status: "Available",
     isTrending: true,
+    isTopRated: true,
     cardTags: ["Antibody Discovery", "Literature Search", "Candidate Screening"],
     lastUsed: null,
     primary:     { provider: "Microsoft", url: "https://...", status: "Available" },
@@ -89,12 +90,13 @@ export const initialAgents = [
     type: "agent",
     department: "PR&D",
     description:
-      "Helps scientists research and develop peptides faster. It searches scientific papers, explains experimental results, and suggests practical steps to improve peptide sequences.",
+      "Built for process R&D scientists developing therapeutic peptides and complex sequence variations. It searches specialized literature, evaluates experimental synthesis conditions, and recommends sequence optimizations to minimize aggregation and impurities. This streamlines chemical synthesis planning and eliminates trial-and-error laboratory troubleshooting cycles.",
     icon: Sparkles,
     video: dummyVideo,
     accent: "cyan",
     status: "Available",
     isTrending: false,
+    isTopRated: true,
     lastUsed: null,
     primary:     { provider: "Microsoft", url: "https://...", status: "Available" },
     alternative: { provider: "Aurigene",  url: "https://...", status: "Available" },
@@ -116,7 +118,7 @@ export const initialAgents = [
     type: "agent",
     department: "PR&D",
     description:
-      "A specialized AI assistant that helps scientists navigate carbohydrate chemistry and glycobiology, comparing synthesis methods and troubleshooting reactions to accelerate experimental research.",
+      "Created for process chemistry teams navigating complex carbohydrate synthesis and glycobiology protocols. It interprets reaction mechanisms, compares analytical characterization methods, and diagnoses purification bottlenecks. This provides researchers with evidence-based guidance that resolves experimental failures and accelerates chemical synthesis workflows.",
     detailedDescription:
       "A centralized AI knowledge assistant for carbohydrate chemistry, glycobiology, and glycoengineering. It helps R&D scientists interpret complex concepts, compare analytical methods, and troubleshoot synthesis and purification—providing scientifically reasoned insights to optimize laboratory workflows.",
     icon: Layers,
@@ -147,7 +149,7 @@ export const initialAgents = [
     type: "application",
     department: "NBE",
     description:
-      "Automates hybridoma clone screening and serum ELISA workflows, generating titration curves and Excel outputs to eliminate tedious manual calculation errors and save scientists hours of lab time.",
+      "Engineered for biologics screening laboratories running high-throughput hybridoma and serum ELISA assays. It automatically ingests raw spectrophotometer optical density readings, averages duplicate wells, and fits statistical titration curves. This eliminates error-prone spreadsheet calculations and produces audit-ready analytical reports in minutes.",
     detailedDescription:
       "An intelligent laboratory automation agent that processes Hybridoma and serum ELISA screening data end-to-end. It automatically identifies viable clones, averages duplicates, generates titration curves, and outputs standardized Excel reports—saving scientists hours and eliminating manual calculation errors.",
     icon: documentIcon,
@@ -179,7 +181,7 @@ export const initialAgents = [
     type: "agent",
     department: "General",
     description:
-      "An AI agent that identifies gaps across analytical validation and formulation manufacturing practices between Teva and Dr. Reddy's/Aurigene, streamlining regulatory alignment and compliance.",
+      "Designed for cross-functional quality and regulatory teams harmonizing technical transfer documentation between Teva and Aurigene. It conducts automated gap analysis across analytical validation reports and formulation manufacturing practices. This identifies compliance risks early and streamlines technical transfer audits across international manufacturing sites.",
     detailedDescription:
       "An advanced gap analysis agent that compares analytical validation and formulation manufacturing practices between Teva and Dr. Reddy's/Aurigene. It pinpoints discrepancies, FT07 site differences, and compliance risks—accelerating cross-company technical transfers and regulatory harmonization.",
     icon: Layers,
@@ -187,6 +189,7 @@ export const initialAgents = [
     accent: "violet",
     status: "Available",
     isTrending: true,
+    isTopRated: true,
     cardTags: ["Gap Analysis", "Validation Review", "Practice Audit"],
     lastUsed: null,
     primary:     { provider: "Microsoft", url: "https://...", status: "Available" },
@@ -210,7 +213,7 @@ export const initialAgents = [
     type: "agent",
     department: "Quality Assurance",
     description:
-      "An application to transform documents containing spelling mistakes, formatting errors, lengthy content to reliable smart documents with added company branding logos and AI interpreted insights.",
+      "Built for quality assurance and compliance specialists managing technical documentation and standard operating procedures. It automatically corrects typographical and formatting discrepancies, restructures dense scientific texts, and applies corporate branding guidelines. This reduces document review turnaround and guarantees standardized regulatory compliance.",
     icon: FileText,
     video: dummyVideo,
     accent: "cyan",
@@ -262,3 +265,19 @@ export const CANONICAL_DEPARTMENTS = [
   "Toxicology",
 ];
 
+export const isDemoVideoEnabled = (agent) => {
+  if (!agent) return false;
+  const id = String(agent.id || "").toLowerCase().trim();
+  const name = String(agent.name || "").toLowerCase().trim();
+
+  // Allowed agents: Documenter AI, Teva Agent, and Hybridoma ELISA
+  return (
+    id === "documenter" ||
+    name.includes("documenter") ||
+    id === "teva agent" ||
+    name.includes("teva") ||
+    id === "elisa-hybridoma-ai" ||
+    name.includes("hybridoma") ||
+    name.includes("elisa")
+  );
+};

@@ -249,7 +249,7 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
       heroVideoRef.current.muted = nextMuted;
       setIsMuted(nextMuted);
       if (!nextMuted) {
-        heroVideoRef.current.play().catch(() => {});
+        heroVideoRef.current.play().catch(() => { });
       }
     }
   };
@@ -338,58 +338,16 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
           <div className="stories-hero-video-overlay" />
         </div>
 
-        {/* Hero Center Content */}
+        {/* Hero Overlay Content */}
         <div className="stories-hero-content">
-          <div className="stories-hero-badge">
-            <Sparkles size={14} className="stories-badge-sparkle" />
-            <span>#1 AI Platform for Life Sciences &amp; Discovery</span>
-          </div>
-
           <h1 className="stories-hero-headline">
-            Hubble, an intelligent companion<br />
-            that actually
+            Hubble.ai for Aurigene
           </h1>
-
           <p className="stories-hero-subtitle">
-            Automate work, accelerate research, and unlock productivity with specialized AI agents.
+            Reshape the future along with AI Integration
+            <br />
+            Available when you need it.
           </p>
-
-          {/* Action CTAs */}
-          <div className="stories-hero-actions">
-            <button
-              type="button"
-              className="stories-hero-primary-btn"
-              onClick={handleLaunch}
-            >
-              <span>Launch Agent Portal</span>
-              <ArrowRight size={17} />
-            </button>
-            <button
-              type="button"
-              className="stories-hero-secondary-btn"
-              onClick={() => scrollTo("stories-section")}
-            >
-              <span>Explore Real Stories</span>
-            </button>
-          </div>
-
-          {/* Trust Badges */}
-          <div className="stories-hero-badges-row">
-            <div className="stories-trust-badge">
-              <Clock size={16} />
-              <span>Zero Waiting Time</span>
-            </div>
-            <div className="stories-trust-badge-divider" />
-            <div className="stories-trust-badge">
-              <ShieldCheck size={16} />
-              <span>Safe and Secure</span>
-            </div>
-            <div className="stories-trust-badge-divider" />
-            <div className="stories-trust-badge">
-              <CheckCircle2 size={16} />
-              <span>21 CFR Part 11 Ready</span>
-            </div>
-          </div>
         </div>
 
         {/* Bottom Left: Sound On/Off Button */}

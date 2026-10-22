@@ -9,10 +9,17 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import React from "react";
+import React, { useMemo, useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+
+gsap.registerPlugin(ScrollTrigger, SplitText);
 import {
   Activity,
   BarChart3,
+  Bookmark,
   Building2,
   Check,
   ChevronDown,
@@ -92,9 +99,129 @@ export function LandingPage({
   setActiveDemo,
   feedbackModal,
   setFeedbackModal,
-  isDarkMode,
-  setIsDarkMode,
+  isDarkMode = false,
 }) {
+  const containerRef = useRef(null);
+  const headlineRef = useRef(null);
+  const subtitleRef = useRef(null);
+
+  // ── Hero text animations (runs once on mount) ──
+  useGSAP(() => {
+    const headline = headlineRef.current;
+    const subtitle = subtitleRef.current;
+    if (!headline || !subtitle) return;
+
+    let splitH = null;
+    let splitS = null;
+    let cancelled = false;
+
+    const runAnimations = () => {
+      if (cancelled) return;
+
+      try {
+        // 1. HEADLINE: Horizontal character-by-character slide in (slowed to 2s)
+        splitH = new SplitText(headline, { type: "chars,words" });
+        if (splitH.chars.length) {
+          gsap.fromTo(
+            splitH.chars,
+            { opacity: 0, x: -20 },
+            {
+              opacity: 1,
+              x: 0,
+              stagger: 0.080,
+              duration: 4.0,
+              ease: "power2.out",
+            }
+          );
+        }
+      } catch {
+        // If SplitText fails, just fade in the whole headline
+        gsap.fromTo(headline, { opacity: 0 }, { opacity: 1, duration: 4.0 });
+      }
+
+      try {
+        // 2. SUBTITLE: Fade + slide up line-by-line (slowed to 2s)
+        splitS = new SplitText(subtitle, { type: "lines" });
+        if (splitS.lines.length) {
+          gsap.fromTo(
+            splitS.lines,
+            { opacity: 0, y: 20 },
+            {
+              opacity: 1,
+              y: 0,
+              stagger: 0.45,
+              duration: 4.0,
+              ease: "power2.out",
+              delay: 0.5,
+            }
+          );
+        }
+      } catch {
+        gsap.fromTo(subtitle, { opacity: 0 }, { opacity: 1, duration: 4.0, delay: 0.5 });
+      }
+    };
+
+    // Double rAF after fonts ready — guarantees layout is fully painted
+    document.fonts.ready.then(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => runAnimations());
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      try { if (splitH) splitH.revert(); } catch { }
+      try { if (splitS) splitS.revert(); } catch { }
+    };
+  }, []);
+
+  // Stable key of visible agent IDs to prevent re-triggering entrance animation on favorite toggle
+  const agentIdsKey = useMemo(
+    () => sortedAndFilteredAgents.map((a) => a.id).join(","),
+    [sortedAndFilteredAgents]
+  );
+
+  useGSAP(
+    () => {
+      const cards = gsap.utils.toArray(".agent-card");
+      if (!cards.length) return;
+
+      // Group cards into rows based on responsive column layout
+      const cols = window.innerWidth <= 768 ? 1 : window.innerWidth <= 1180 ? 2 : 3;
+      const rows = [];
+      for (let i = 0; i < cards.length; i += cols) {
+        rows.push(cards.slice(i, i + cols));
+      }
+
+      rows.forEach((rowCards, rowIndex) => {
+        const isFirstRow = rowIndex === 0;
+
+        const tl = gsap.timeline(
+          isFirstRow
+            ? { delay: 0.1 }
+            : {
+              scrollTrigger: {
+                trigger: rowCards[0],
+                start: "top 90%",
+                toggleActions: "play none none none",
+              },
+            }
+        );
+
+        // Animate cards in with safe opacity + y (NO clipPath to avoid blank screen)
+        tl.from(rowCards, {
+          opacity: 0,
+          y: 40,
+          stagger: 0.15,
+          duration: 2.0,
+          ease: "power2.out",
+          clearProps: "transform",
+        });
+      });
+    },
+    { scope: containerRef, dependencies: [agentIdsKey] }
+  );
+
   return (
     <div className={`app-shell${isDarkMode ? " app-shell--dark" : ""}`}>
       {/* ─────────────────────────────── Header ──────────────────────────── */}
@@ -143,22 +270,6 @@ export function LandingPage({
           </nav>
 
           <div className="header-actions">
-            {/* ── Theme Toggle ── */}
-            <button
-              type="button"
-              className={`theme-toggle-btn${isDarkMode ? " dark" : ""}`}
-              onClick={() => setIsDarkMode((v) => !v)}
-              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              aria-label="Toggle theme"
-            >
-              <span className="theme-toggle-track">
-                <span className="theme-toggle-thumb" />
-              </span>
-              <span className="theme-toggle-label">
-                {isDarkMode ? "🌙 Dark" : "☀️ Light"}
-              </span>
-            </button>
-
             <div className="user-avatar-pill" title="user@aurigene.com">
               <div className="avatar-circle">U</div>
             </div>
@@ -170,17 +281,17 @@ export function LandingPage({
         {/* ────────────────────────── Discovery Hero ───────────────────── */}
         <section className="discovery-hero">
           {/* kicker pill removed per request */}
-          <h1 className="discovery-headline">
+          <h1 ref={headlineRef} className="discovery-headline">
             Discover AI Agents for{" "}
-            <span className="highlight-text">Every Need from the Hub</span>
+            <span className="highlight-text" style={{ color: "#0a58ca" }}>Every Need from the Hub</span>
           </h1>
-          <p className="discovery-subtitle">
+          <p ref={subtitleRef} className="discovery-subtitle">
             Automate work, accelerate research, and unlock productivity with specialized AI agents.
           </p>
         </section>
 
         {/* ─────────────────────── Directory + Filters ─────────────────── */}
-        <section className="directory" id="agents">
+        <section className="directory" id="agents" ref={containerRef}>
 
           {/* Row 1: Search + Dropdowns */}
           <div className="discovery-controls-top" ref={filterBarRef}>
@@ -294,7 +405,7 @@ export function LandingPage({
               >
                 <div className="popover-list">
                   {[
-                    { id: "favorites", label: "Favorites", count: favorites.length, icon: <Star size={13} fill={favorites.length > 0 ? "#f59e0b" : "none"} color="#f59e0b" /> },
+                    { id: "favorites", label: "Favorites", count: favorites.length, icon: <Bookmark size={13} fill={favorites.length > 0 ? "#d97706" : "none"} color="#d97706" strokeWidth={2} /> },
                     { id: "trending", label: "Trending", count: trendingCount, icon: null },
                   ].map((item) => {
                     const isChecked = selectedFavFilters.includes(item.id);
@@ -362,9 +473,9 @@ export function LandingPage({
             </div>
           ) : selectedFavFilters.includes("favorites") && favorites.length === 0 ? (
             <div className="empty-state">
-              <Star size={28} color="#f59e0b" fill="rgba(245, 158, 11, 0.2)" />
-              <h3>No favorites yet</h3>
-              <p>Click the ★ star icon on any agent card to add it to your favorites list.</p>
+              <Bookmark size={28} color="#d97706" fill="rgba(217, 119, 6, 0.2)" strokeWidth={2} />
+              <h3>No saved favorites yet</h3>
+              <p>Click the save bookmark icon on any agent card to add it to your favorites list.</p>
               <button type="button" className="popover-clear-btn" style={{ marginTop: 14, padding: "7px 16px", borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.2)", color: "#cbd5e1", cursor: "pointer" }} onClick={() => setSelectedFavFilters([])}>
                 Show All Agents
               </button>

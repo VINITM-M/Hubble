@@ -68,27 +68,14 @@ export default function App() {
   // ── Intro flow ──────────────────────────────────────────────────────────────
   const [showIntro, setShowIntro] = useState(true);
 
-  // ── Global dark-mode toggle (shared across all pages) ────────────────────────
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    try {
-      const saved = localStorage.getItem("hubble_dark_mode");
-      return saved !== null ? JSON.parse(saved) : false;
-    } catch {
-      return false;
-    }
-  });
-
-  // Sync dark-mode class to <html> so CSS variables and body bg are also covered
+  // ── Global theme (defaults to crisp light theme #FAFBFB) ─────────────────────
+  const isDarkMode = false;
   useEffect(() => {
     try {
-      localStorage.setItem("hubble_dark_mode", JSON.stringify(isDarkMode));
+      localStorage.removeItem("hubble_dark_mode");
     } catch { }
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark-mode");
-    } else {
-      document.documentElement.classList.remove("dark-mode");
-    }
-  }, [isDarkMode]);
+    document.documentElement.classList.remove("dark-mode");
+  }, []);
 
   // ── Client-side routing ─────────────────────────────────────────────────────
   const [routeState, setRouteState] = useState(() => parseRoute(window.location.pathname));
@@ -178,6 +165,7 @@ export default function App() {
   const trendingCount = useMemo(() => agentsList.filter((a) => Boolean(a.isTrending)).length, [agentsList]);
 
   // ── Filtered agent list ───────────────────────────────────────────────────────
+  const isFavoritesFilterActive = selectedFavFilters.includes("favorites");
   const sortedAndFilteredAgents = useMemo(
     () =>
       filterAgents(agentsList, {
@@ -189,7 +177,16 @@ export default function App() {
         query,
         aiMatchedIds,
       }),
-    [agentsList, favorites, selectedFavFilters, selectedDepartments, selectedTools, selectedStatuses, query, aiMatchedIds],
+    [
+      agentsList,
+      isFavoritesFilterActive ? favorites : null,
+      selectedFavFilters,
+      selectedDepartments,
+      selectedTools,
+      selectedStatuses,
+      query,
+      aiMatchedIds,
+    ],
   );
 
   const hasActiveFilters =
@@ -377,7 +374,7 @@ export default function App() {
   }
 
   if (route === "/upcoming") {
-    return <UpcomingAgentsPage onNavigate={navigate} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />;
+    return <UpcomingAgentsPage onNavigate={navigate} isDarkMode={isDarkMode} />;
   }
 
   if (route === "/stories") {
@@ -397,7 +394,6 @@ export default function App() {
 
       <LandingPage
         isDarkMode={isDarkMode}
-        setIsDarkMode={setIsDarkMode}
         // data
         agentsList={agentsList}
         sortedAndFilteredAgents={sortedAndFilteredAgents}
