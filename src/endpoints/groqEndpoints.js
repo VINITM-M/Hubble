@@ -9,9 +9,9 @@ export const GROQ_CONFIG = {
   BASE_URL: "https://api.groq.com/openai/v1",
   CHAT_COMPLETIONS: "https://api.groq.com/openai/v1/chat/completions",
   MODELS: {
-    PRIMARY: "llama-3.3-70b-versatile",
-    FALLBACK: "llama-3.1-8b-instant",
-    FAST: "llama-3.1-8b-instant",
+    PRIMARY: "openai/gpt-oss-120b",
+    FALLBACK: "openai/gpt-oss-20b",
+    FAST: "openai/gpt-oss-20b",
   },
   DEFAULT_PARAMS: {
     temperature: 0.1,

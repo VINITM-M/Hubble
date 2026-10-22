@@ -301,7 +301,7 @@ export function LandingPage({
                 id="agent-search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search agents, capabilities, departments (e.g. 'research paper for bio', 'data analysis')..."
+                placeholder="Search agents by task or question (e.g. 'I want to perform antibody analysis', 'Peptide synthesis', 'ELISA screening')..."
                 aria-label="Search agents, capabilities, departments"
               />
               {isAiSearching && (

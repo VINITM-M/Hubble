@@ -130,20 +130,126 @@ export function filterAgents(pool, {
     });
   }
 
-  // 6b. Keyword fallback
-  return result.filter((agent) =>
+  // 6b. Intelligent intent & keyword matching fallback
+  // First, test direct substring match
+  const directMatches = result.filter((agent) =>
     [
       agent.name,
       agent.description,
       agent.department,
       agent.primary?.provider ?? "",
       agent.alternative?.provider ?? "",
+      ...(agent.cardTags ?? []),
       ...(agent.capabilities ?? []),
     ]
       .join(" ")
       .toLowerCase()
       .includes(normalized),
   );
+
+  if (directMatches.length > 0) return directMatches;
+
+  // Natural language query tokenization — strip filler and conversational stop words
+  const STOP_WORDS = new Set([
+    "i", "want", "to", "perform", "do", "need", "help", "with", "me", "a", "an",
+    "the", "for", "in", "on", "at", "by", "from", "can", "you", "find", "show",
+    "search", "which", "what", "is", "are", "solve", "my", "our", "task", "problem",
+    "agent", "agents", "please", "would", "like", "how", "give"
+  ]);
+
+  const tokens = normalized
+    .replace(/[^\w\s-]/g, " ")
+    .split(/\s+/)
+    .map((w) => w.trim())
+    .filter((w) => w.length > 1 && !STOP_WORDS.has(w));
+
+  if (tokens.length === 0) return result;
+
+  // Domain aliases for instant landing page agent matching
+  const DOMAIN_ALIAS_MAP = {
+    "antibody": ["antibody-expert"],
+    "antibodies": ["antibody-expert"],
+    "mab": ["antibody-expert"],
+    "mabs": ["antibody-expert"],
+    "monoclonal": ["antibody-expert"],
+    "peptide": ["peptide-ai"],
+    "peptides": ["peptide-ai"],
+    "synthesis": ["peptide-ai", "carbohydrate-chemistry-expert-agent"],
+    "carbohydrate": ["carbohydrate-chemistry-expert-agent"],
+    "carbohydrates": ["carbohydrate-chemistry-expert-agent"],
+    "carbo": ["carbohydrate-chemistry-expert-agent"],
+    "glyco": ["carbohydrate-chemistry-expert-agent"],
+    "glycobiology": ["carbohydrate-chemistry-expert-agent"],
+    "glycoengineering": ["carbohydrate-chemistry-expert-agent"],
+    "elisa": ["ELISA-Hybridoma-AI"],
+    "hybridoma": ["ELISA-Hybridoma-AI"],
+    "hybridomas": ["ELISA-Hybridoma-AI"],
+    "titration": ["ELISA-Hybridoma-AI"],
+    "spectrophotometer": ["ELISA-Hybridoma-AI"],
+    "clone": ["ELISA-Hybridoma-AI"],
+    "clones": ["ELISA-Hybridoma-AI"],
+    "teva": ["Teva Agent"],
+    "ft07": ["Teva Agent"],
+    "transfer": ["Teva Agent"],
+    "sop": ["documenter"],
+    "sops": ["documenter"],
+    "document": ["documenter"],
+    "documenter": ["documenter"],
+    "documentation": ["documenter"],
+    "compliance": ["documenter", "Teva Agent"],
+    "quality": ["documenter", "Teva Agent"],
+  };
+
+  const scored = result.map((agent) => {
+    let score = 0;
+    const searchableText = [
+      agent.name,
+      agent.id,
+      agent.department || "",
+      agent.description || "",
+      agent.detailedDescription || "",
+      ...(agent.cardTags || []),
+      ...(agent.capabilities || []),
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    tokens.forEach((t) => {
+      if (searchableText.includes(t)) {
+        score += 2;
+        if (agent.name.toLowerCase().includes(t)) score += 4;
+        if ((agent.department || "").toLowerCase().includes(t)) score += 3;
+      }
+      const mappedIds = DOMAIN_ALIAS_MAP[t];
+      if (mappedIds && mappedIds.includes(agent.id)) {
+        score += 8;
+      }
+    });
+
+    return { agent, score };
+  });
+
+  // If query specifically contained domain keywords, return only agents in that domain
+  const domainMatchedIds = new Set();
+  tokens.forEach((t) => {
+    const mapped = DOMAIN_ALIAS_MAP[t];
+    if (mapped) {
+      mapped.forEach((id) => domainMatchedIds.add(id));
+    }
+  });
+
+  if (domainMatchedIds.size > 0) {
+    const domainAgents = scored.filter((s) => domainMatchedIds.has(s.agent.id));
+    if (domainAgents.length > 0) {
+      return domainAgents.sort((a, b) => b.score - a.score).map((s) => s.agent);
+    }
+  }
+
+  const maxScore = Math.max(...scored.map((s) => s.score), 0);
+  if (maxScore <= 0) return [];
+  const threshold = Math.max(Math.ceil(maxScore * 0.5), 2);
+  const matched = scored.filter((s) => s.score >= threshold).sort((a, b) => b.score - a.score);
+  return matched.map((s) => s.agent);
 }
 
 // ── Rating utilities ──────────────────────────────────────────────────────────

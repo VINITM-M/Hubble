@@ -17,10 +17,11 @@ import chatbotAvatar from "../../assets/chatbot-avatar.jpg";
 import { askChatbot } from "../../services/groqService.js";
 
 const SUGGESTED_QUESTIONS = [
-  "Explain what Teva Agent does",
-  "Which agent should I use for scientific research?",
-  "What does Capacitor Application do?",
-  "Which agent transcribes meetings & notes?",
+  "I want to perform antibody analysis & literature research",
+  "How does Hybridoma ELISA automate clone screening & titration curves?",
+  "Explain how Teva Agent conducts technical transfer gap analysis",
+  "Which agent helps with peptide synthesis & sequence optimization?",
+  "What does Documenter AI do for SOP and regulatory compliance?",
 ];
 
 export function Chatbot({ agentsList = [], onLocateAgent, onLaunchAgent }) {

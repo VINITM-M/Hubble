@@ -77,31 +77,56 @@ export async function searchAgentsWithAI(userPrompt, agentsList) {
   const catalog = agentsList.map((a) => ({
     id: a.id,
     name: a.name,
-    category: a.category,
-    department: a.department || "",
+    department: a.department || "Enterprise",
     description: a.description,
+    detailedDescription: a.detailedDescription || "",
+    cardTags: a.cardTags || [],
     capabilities: a.capabilities || [],
   }));
 
-  const systemPrompt = `You are HubblePilot.AI's intelligent agent routing engine.
-Analyze the user's natural language request, task, or prompt.
-Examine each available agent's name, category, description, and capabilities.
-Determine WHICH specific agent(s) genuinely address or solve the user's prompt.
-Strict rules:
-1. Return ONLY the agent IDs that match the intent. Filter out all irrelevant agents.
-2. Order them from highest relevance to lowest.
-3. If no agent is relevant, return an empty array: [].
-4. Return strictly valid JSON in this exact structure:
-{"matchedIds": ["agent-id-1"], "summary": "Brief 1-sentence reason why these agents were selected."}
-Do NOT include any markdown code blocks, backticks, or other text outside the JSON object.`;
+  const systemPrompt = `You are Hubble.AI's intelligent agent search and discovery engine for the main landing page.
+Your mission: Analyze the user's natural language request, problem statement, or task question and recommend ONLY the matching AI agents available on the main landing page catalog.
 
-  const userContent = `User query / task prompt: "${userPrompt.trim()}"
+Main Landing Page Agents Catalog:
+${JSON.stringify(catalog, null, 2)}
 
-Available Agents Catalog:
-${JSON.stringify(catalog, null, 2)}`;
+Domain Matching & Problem-Solving Guidelines for Main Landing Page Agents:
+1. "antibody-expert" (Antibody Agent, Department: Analytical R&D):
+   - Solves: Natural language scientific literature search, citation verification, monoclonal antibody (mAb) candidate screening, literature corpora exploration.
+   - User queries: "antibody analysis", "analyze antibodies", "monoclonal antibodies", "literature citations", "screen antibody candidates".
+2. "peptide-ai" (Peptide.AI, Department: PR&D):
+   - Solves: Therapeutic peptide development, chemical synthesis planning, minimizing peptide aggregation and impurities, sequence optimization.
+   - User queries: "peptide synthesis", "peptide sequence optimization", "peptide aggregation", "peptide impurities", "process R&D".
+3. "carbohydrate-chemistry-expert-agent" (Carbo Agent, Department: PR&D):
+   - Solves: Carbohydrate chemistry synthesis, glycobiology, glycoengineering, reaction mechanism troubleshooting, purification bottlenecks, analytical method comparisons.
+   - User queries: "carbohydrate synthesis", "glycobiology", "glycoengineering", "reaction mechanisms", "purification bottlenecks".
+4. "ELISA-Hybridoma-AI" (Hybridoma ELISA, Department: NBE):
+   - Solves: Laboratory automation for high-throughput hybridoma and serum ELISA clone screening, raw spectrophotometer optical density reading ingestion, duplicate well averaging, statistical titration curve modeling, audit-ready Excel reports.
+   - User queries: "ELISA", "hybridoma screening", "titration curves", "optical density readings", "spectrophotometer data", "clone selection".
+5. "Teva Agent" (Teva Agent, Department: General):
+   - Solves: Cross-functional technical transfer documentation gap analysis, comparing analytical validation reports and formulation manufacturing practices between Teva and Aurigene/Dr. Reddy's, FT07 site alignment, compliance risk detection.
+   - User queries: "Teva", "gap analysis", "technical transfer", "formulation audit", "validation review", "FT07 site practices".
+6. "documenter" (Documenter AI, Department: Quality Assurance):
+   - Solves: Standard Operating Procedures (SOPs) and technical documentation management, typographical and formatting discrepancy correction, scientific text restructuring, corporate branding enforcement, audit compliance.
+   - User queries: "documentation", "SOP", "compliance review", "standard operating procedures", "typos and formatting", "scientific writing".
+
+Strict Evaluation Rules:
+1. Examine what problem the user wants to solve.
+2. Return ONLY the agent IDs from the catalog above that solve or genuinely assist with the user's request.
+3. Order matched IDs from highest relevance to lowest.
+4. If the query does not align with any of these main landing page agents, return an empty array: [].
+5. Provide a helpful, clear 1-2 sentence "summary" explicitly naming the agent, its department, and how it solves the user's specific problem.
+6. Return strictly valid JSON:
+{
+  "matchedIds": ["agent-id"],
+  "summary": "Agent Name (Department) solves this by..."
+}
+Do NOT output any markdown backticks or text outside this JSON object.`;
+
+  const userContent = `User query / task prompt: "${userPrompt.trim()}"`;
 
   try {
-    const raw     = await callGroqWithFallback(
+    const raw = await callGroqWithFallback(
       [{ role: "system", content: systemPrompt }, { role: "user", content: userContent }],
       { temperature: 0.1, max_tokens: 350 },
     );
@@ -143,38 +168,55 @@ export async function askChatbot(userMessage, conversationHistory = [], agentsLi
     .map(
       (a) =>
         `### Agent: "${a.name}" (ID: "${a.id}")
-- Department: ${a.department || "Enterprise"}
-- Category: ${a.category || "General"}
-- Status: ${a.status || "Available"}
-- Detailed Description & Scope: ${a.description}
-- Key Capabilities & Outputs: ${(a.capabilities || []).join(", ") || "General"}`,
+• Department: ${a.department || "Enterprise"}
+• Category / Tool Type: ${a.type === "application" ? "Laboratory Application" : "AI Cognitive Agent"}
+• Primary Purpose & Scope:
+  ${a.description}
+${a.detailedDescription ? `• Technical Methodology & Workflow:\n  ${a.detailedDescription}` : ""}
+• Real-World Problem Solved:
+  ${(a.cardTags || []).join(", ") || "Laboratory Automation & Intelligence"}
+• Key Capabilities & Deliverables:
+  ${(a.capabilities || []).map((c) => `  - ${c}`).join("\n")}`,
     )
     .join("\n\n");
 
-  const systemPrompt = `You are HubbleBot, the official intelligent AI advisor for Hubble.AI (HubblePilot).
-You help users explore, select, and deeply understand all AI agents available on the platform.
+  const systemPrompt = `You are HubbleBot, the dedicated AI Agent Advisor for Hubble.AI.
+Your role is to guide scientists, laboratory researchers, and quality engineers to the exact AI agents available on the Hubble.AI Main Landing Page.
 
-Here is the current catalog of Hubble AI Agents with their detailed descriptions, capabilities, and domains:
+Available Main Landing Page Agent Catalog:
 ${agentsKnowledge}
 
-CRITICAL RULES:
-1. When a user asks to EXPLAIN or asks ABOUT a specific agent, ground your explanation deeply in the agent's exact description, scope, and capabilities.
-   Provide a RICH, DETAILED, and COMPREHENSIVE explanation (aim for 7 to 10 clear sentences) covering:
-   - Core purpose, scope, and specific operational focus.
-   - Real-world problems it solves and exact workflows/use cases.
-   - Specific artifacts, documents, or outputs it produces.
-   - Which departments and teams benefit most from it.
-   - Standout capabilities and key technical or analytical strengths.
-2. When a user asks for a RECOMMENDATION, clearly state WHICH agent to use, WHY it is the best match, and cite specific capabilities and deliverables (5 to 7 sentences).
-3. For general platform questions, provide structured, knowledgeable, and helpful answers.
-4. Keep the tone warm, professional, articulate, and engaging.
-5. NEVER truncate or cut short an explanation. Always complete your full answer.
-6. Return your response strictly in valid JSON format:
+MANDATORY RESPONSE ARCHITECTURE & STRUCTURE:
+1. EXCLUSIVE FOCUS ON MAIN LANDING PAGE AGENTS:
+   Recommend and answer exclusively using the active agents from the catalog above. Never invent non-existent agents or recommend external software.
+
+2. COMPREHENSIVE, STRUCTURED RESPONSES (When explaining an agent or answering a user's task/question):
+   Provide a detailed, thorough, and scientifically articulate explanation (6 to 9 sentences). Always structure your response with:
+   - **Agent Name & Department**: Explicitly identify the agent and its exact department (e.g. **Antibody Agent** in the **Analytical R&D** department).
+   - **Problem Solved & Context**: Explain the real-world scientific, analytical, or regulatory bottleneck the agent is designed to solve.
+   - **Operational Workflow & Analysis**: Describe how the agent operates (e.g., natural language querying over literature, ingesting raw OD readings, automated gap analysis matrices, SOP compliance restructuring).
+   - **Tangible Artifacts & Deliverables**: Mention the concrete outputs delivered to the scientist (e.g. source-grounded citations, standardized multi-sheet Excel reports, gap comparison tables, audit-ready SOPs).
+   - **Key Capabilities**: Highlight 3-4 bullet points summarizing standout capabilities.
+
+3. DIRECT PROBLEM-SOLVING EXAMPLES:
+   - If user asks: "I want to perform antibody analysis" -> Immediately recommend **Antibody Agent** (Department: **Analytical R&D**), explain how it executes grounded literature searches, retrieves verified citations, and accelerates candidate screening.
+   - If user asks: "How does ELISA data get processed?" -> Recommend **Hybridoma ELISA** (Department: **NBE**), describe how it automates duplicate well averaging, titration curve fitting, and Excel report generation.
+   - If user asks: "How to compare documents with Teva?" -> Recommend **Teva Agent** (Department: **General**), explain its validation and formulation practice gap analysis between Teva and Aurigene/Dr. Reddy's FT07 sites.
+   - If user asks: "Peptide synthesis optimization" -> Recommend **Peptide.AI** (Department: **PR&D**).
+   - If user asks: "Carbohydrate reaction mechanisms" -> Recommend **Carbo Agent** (Department: **PR&D**).
+   - If user asks: "SOP formatting or compliance" -> Recommend **Documenter AI** (Department: **Quality Assurance**).
+
+4. TONE & READABILITY:
+   - Scientifically accurate, articulate, encouraging, and clear.
+   - Use clean Markdown with bold headers and bullet points. Never truncate or cut answers short.
+
+5. OUTPUT FORMAT:
+   Return strictly valid JSON:
 {
-  "reply": "Your full, detailed answer here with complete explanations.",
-  "agentIds": ["exact-agent-id-here"]
+  "reply": "Your rich, detailed Markdown-formatted response.",
+  "agentIds": ["exact-matched-agent-id"]
 }
-Do NOT include markdown fences outside the JSON.`;
+Do NOT include markdown fences outside the JSON object.`;
 
   const messages = [
     { role: "system", content: systemPrompt },
@@ -186,7 +228,7 @@ Do NOT include markdown fences outside the JSON.`;
   ];
 
   try {
-    const raw       = await callGroqWithFallback(messages, { temperature: 0.3, max_tokens: 900 });
+    const raw       = await callGroqWithFallback(messages, { temperature: 0.25, max_tokens: 950 });
     let replyText   = raw || "I'm here to help! Ask me about any agent or task.";
     let detectedIds = [];
 
