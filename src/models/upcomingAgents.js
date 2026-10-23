@@ -30,7 +30,7 @@ export const UPCOMING_AGENTS = [
       "Identifies chemical peaks and sample components",
       "Creates clear summary reports for scientists",
     ],
-    upvotes: 67,
+    upvotes: 0,
   },
   {
     id: "protein-a-resin-optimization",
@@ -53,7 +53,7 @@ export const UPCOMING_AGENTS = [
       "Reduces trial-and-error testing in the lab",
       "Improves purification yield and product purity",
     ],
-    upvotes: 51,
+    upvotes: 0,
   },
   {
     id: "aurigene-ai-cdmo-biologics",
@@ -76,7 +76,7 @@ export const UPCOMING_AGENTS = [
       "Helps pick the strongest drug candidates",
       "Cuts down on expensive experimental screening",
     ],
-    upvotes: 89,
+    upvotes: 0,
   },
   {
     id: "bio-med",
@@ -99,7 +99,7 @@ export const UPCOMING_AGENTS = [
       "Finds toxicology and safety information quickly",
       "Provides clear insights to guide research decisions",
     ],
-    upvotes: 112,
+    upvotes: 0,
   },
   {
     id: "automated-analytical-report-generation",
@@ -122,7 +122,7 @@ export const UPCOMING_AGENTS = [
       "Prepares standardized, audit-ready reports",
       "Saves hours of manual copy-pasting for analysts",
     ],
-    upvotes: 76,
+    upvotes: 0,
   },
   {
     id: "automated-protocol-generation",
@@ -145,7 +145,7 @@ export const UPCOMING_AGENTS = [
       "Pre-fills standard safety and instrument settings",
       "Speeds up protocol review and sign-off",
     ],
-    upvotes: 61,
+    upvotes: 0,
   },
   {
     id: "stability-trend-analysis",
@@ -168,7 +168,7 @@ export const UPCOMING_AGENTS = [
       "Warns early if a batch is drifting off specification",
       "Generates clean trend charts for regulatory review",
     ],
-    upvotes: 48,
+    upvotes: 0,
   },
   {
     id: "qa-approval-support",
@@ -191,7 +191,7 @@ export const UPCOMING_AGENTS = [
       "Highlights missing details or expired certificates",
       "Helps QA approve equipment with less manual paperwork",
     ],
-    upvotes: 55,
+    upvotes: 0,
   },
   {
     id: "life-sciences-platform-research",
@@ -214,7 +214,7 @@ export const UPCOMING_AGENTS = [
       "Identifies practical tools that save time for scientists",
       "Shares clear summaries to guide technology adoption",
     ],
-    upvotes: 29,
+    upvotes: 0,
   },
   {
     id: "lab-of-the-future",
@@ -237,7 +237,7 @@ export const UPCOMING_AGENTS = [
       "Automates repetitive steps in testing and sampling",
       "Helps scientists track experiment progress remotely",
     ],
-    upvotes: 73,
+    upvotes: 0,
   },
   {
     id: "process-platform-ros-retrosynthesis",
@@ -260,7 +260,7 @@ export const UPCOMING_AGENTS = [
       "Recommends safe, practical reaction conditions",
       "Connects directly with digital laboratory notebooks",
     ],
-    upvotes: 46,
+    upvotes: 0,
   },
   {
     id: "in-vitro-ai-planner",
@@ -283,7 +283,7 @@ export const UPCOMING_AGENTS = [
       "Finds background information on cell lines and assays",
       "Makes day-to-day lab planning simpler and faster",
     ],
-    upvotes: 35,
+    upvotes: 0,
   },
   {
     id: "in-vivo-vivarium-planner",
@@ -306,7 +306,7 @@ export const UPCOMING_AGENTS = [
       "Helps teams manage facility space and resources",
       "Ensures study timelines follow regulatory guidelines",
     ],
-    upvotes: 42,
+    upvotes: 0,
   },
   {
     id: "ai-platform-health-usage-dashboard",
@@ -329,7 +329,7 @@ export const UPCOMING_AGENTS = [
       "Measures response times to ensure fast performance",
       "Alerts technical teams immediately if an issue arises",
     ],
-    upvotes: 97,
+    upvotes: 0,
   },
   {
     id: "employee-navigator-agent",
@@ -352,7 +352,7 @@ export const UPCOMING_AGENTS = [
       "Guides new employees through onboarding checklists",
       "Saves time by providing direct, accurate answers",
     ],
-    upvotes: 91,
+    upvotes: 0,
   },
   {
     id: "zen-ai",
@@ -375,7 +375,7 @@ export const UPCOMING_AGENTS = [
       "Understands normal, everyday questions",
       "Protects sensitive company information securely",
     ],
-    upvotes: 119,
+    upvotes: 0,
   },
   {
     id: "capacitor-application",
@@ -398,7 +398,7 @@ export const UPCOMING_AGENTS = [
       "Coordinates equipment maintenance plans",
       "Helps teams plan production batches with confidence",
     ],
-    upvotes: 62,
+    upvotes: 0,
   },
 
   {
@@ -422,7 +422,7 @@ export const UPCOMING_AGENTS = [
       "Tracks mergers, acquisitions, and executive moves",
       "Builds concise client profile summaries",
     ],
-    upvotes: 68,
+    upvotes: 0,
   },
   {
     id: "transportation-agent",
@@ -445,7 +445,7 @@ export const UPCOMING_AGENTS = [
       "Sends timely WhatsApp alerts on bus arrival times",
       "Helps HR manage commuter routes and schedules",
     ],
-    upvotes: 74,
+    upvotes: 0,
   },
   {
     id: "translator-agent",
@@ -468,7 +468,7 @@ export const UPCOMING_AGENTS = [
       "Maintains tables, charts, and document formatting",
       "Helps international teams collaborate accurately",
     ],
-    upvotes: 56,
+    upvotes: 0,
   },
   {
     id: "rfi-rfp-agent",
@@ -491,7 +491,7 @@ export const UPCOMING_AGENTS = [
       "Checks proposal drafts for completeness and accuracy",
       "Saves business development teams days of drafting time",
     ],
-    upvotes: 63,
+    upvotes: 0,
   },
   {
     id: "sembly-agent",
@@ -514,7 +514,7 @@ export const UPCOMING_AGENTS = [
       "Generates clear meeting summaries ready to share",
       "Keeps project teams aligned on pending deliverables",
     ],
-    upvotes: 95,
+    upvotes: 0,
   },
   {
     id: "meeting-assistant-agent",
@@ -537,6 +537,6 @@ export const UPCOMING_AGENTS = [
       "Prepares audit-ready meeting summaries quickly",
       "Follows up on overdue decisions to keep projects moving",
     ],
-    upvotes: 82,
+    upvotes: 0,
   },
 ];

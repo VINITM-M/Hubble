@@ -38,6 +38,20 @@ import {
 
 // ── Services ─────────────────────────────────────────────────────────────────
 import { searchAgentsWithAI } from "./services/groqService.js";
+import {
+  getActiveUserEmail,
+  setActiveUserEmail,
+  clearUserSession,
+  registerOrGetUser,
+  fetchUserData,
+  fetchTrendingSummary,
+  toggleSaveCard,
+  recordLaunchClick,
+  fetchAllAgentRatings,
+} from "./services/backendApi.js";
+
+// ── UI – Shared ───────────────────────────────────────────────────────────────
+import { LoginModal } from "./ui/shared/LoginModal.jsx";
 
 // ── UI – Intro ────────────────────────────────────────────────────────────────
 import { IntroFlow } from "./ui/intro/IntroFlow.jsx";
@@ -98,6 +112,57 @@ export default function App() {
   // ── Agent catalog ────────────────────────────────────────────────────────────
   const [agentsList, setAgentsList] = useState(() => computeAgentRatings(initialAgents));
   const [favorites, setFavorites] = useState(() => getSavedFavorites());
+
+  // ── User Identity & Login Modal State (Defaults to Guest) ───────────────────
+  const [userEmail, setUserEmail] = useState(() => getActiveUserEmail());
+  const [userLaunchClicks, setUserLaunchClicks] = useState({});
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [pendingLaunchAgent, setPendingLaunchAgent] = useState(null);
+
+  // ── Sync with FastAPI / SQLite Backend on load or user change ────────────────
+  useEffect(() => {
+    // 1. Fetch live feedback ratings from SQLite backend (replaces defaults with live averages & review counts)
+    fetchAllAgentRatings().then((ratingsMap) => {
+      if (ratingsMap) {
+        setAgentsList((prev) => recomputeRatings(prev, ratingsMap));
+      }
+    });
+
+    // 2. If user is logged in, fetch their saved bookmarks and launch counts
+    if (userEmail) {
+      fetchUserData(userEmail).then((userData) => {
+        if (userData?.saved_card_ids && Array.isArray(userData.saved_card_ids)) {
+          if (userData.saved_card_ids.length > 0) {
+            setFavorites(userData.saved_card_ids);
+            saveFavorites(userData.saved_card_ids);
+          }
+        }
+        if (userData?.launch_clicks) {
+          setUserLaunchClicks(userData.launch_clicks);
+        }
+      });
+    }
+
+    // 3. Fetch global trending summary from SQLite backend
+    fetchTrendingSummary().then((summary) => {
+      if (summary?.top_trending_cards && Array.isArray(summary.top_trending_cards)) {
+        const trendingIds = new Set(
+          summary.top_trending_cards
+            .filter((c) => c.is_trending)
+            .map((c) => c.card_id)
+        );
+
+        if (trendingIds.size > 0) {
+          setAgentsList((prev) =>
+            prev.map((agent) => ({
+              ...agent,
+              isTrending: agent.isTrending || trendingIds.has(agent.id),
+            }))
+          );
+        }
+      }
+    });
+  }, [userEmail]);
 
   // ── Filter state ─────────────────────────────────────────────────────────────
   const [query, setQuery] = useState("");
@@ -285,25 +350,99 @@ export default function App() {
   };
 
   const toggleFavorite = (agentId) => {
+    if (!userEmail) {
+      setIsLoginModalOpen(true);
+      return;
+    }
     setFavorites((prev) => {
-      const next = prev.includes(agentId) ? prev.filter((id) => id !== agentId) : [...prev, agentId];
+      const willBeSaved = !prev.includes(agentId);
+      const next = willBeSaved ? [...prev, agentId] : prev.filter((id) => id !== agentId);
       saveFavorites(next);
+      // Persist to SQLite backend
+      toggleSaveCard(userEmail, agentId, willBeSaved);
       return next;
     });
   };
 
+  const proceedWithLaunch = (agent, clicksMap, email) => {
+    const currentClicks = (clicksMap && clicksMap[agent.id]) || 0;
+    const nextClicks = currentClicks + 1;
+
+    // Update local click count
+    setUserLaunchClicks((prev) => ({ ...prev, [agent.id]: nextClicks }));
+    // Persist launch count to SQLite backend
+    recordLaunchClick(email, agent.id, "agent");
+
+    // Only trigger feedback modal if the user has launched this agent MORE THAN TWICE (i.e. 2 or more prior launches)
+    if (currentClicks >= 2) {
+      setFeedbackModal({ agent });
+    } else {
+      // 1st or 2nd time: directly launch agent in new tab!
+      window.open(agent.primary.url, "_blank", "noreferrer");
+    }
+  };
+
   const handleLaunchAgent = (agentId) => {
     const agent = agentsList.find((a) => a.id === agentId);
-    if (agent && agent.primary?.status === "Available") {
-      setFeedbackModal({ agent });
+    if (!agent || agent.primary?.status !== "Available") return;
+
+    // 1. If user is guest (not logged in), prompt simple Login modal first
+    if (!userEmail) {
+      setPendingLaunchAgent(agent);
+      setIsLoginModalOpen(true);
+      return;
     }
+
+    // 2. User is logged in -> proceed with launch logic based on launch counts
+    proceedWithLaunch(agent, userLaunchClicks, userEmail);
+  };
+
+  const handleLoginSuccess = async (email) => {
+    setActiveUserEmail(email);
+    setUserEmail(email);
+    setIsLoginModalOpen(false);
+
+    // Register user in backend SQLite
+    await registerOrGetUser(email);
+
+    // Replicate previous bookmarks & launch counts from SQLite backend
+    let latestClicks = {};
+    try {
+      const userData = await fetchUserData(email);
+      if (userData) {
+        if (Array.isArray(userData.saved_card_ids) && userData.saved_card_ids.length > 0) {
+          setFavorites(userData.saved_card_ids);
+          saveFavorites(userData.saved_card_ids);
+        }
+        if (userData.launch_clicks) {
+          latestClicks = userData.launch_clicks;
+          setUserLaunchClicks(userData.launch_clicks);
+        }
+      }
+    } catch (err) {
+      console.warn("Could not retrieve user data:", err);
+    }
+
+    // Automatically trigger launch if an agent card was pending
+    if (pendingLaunchAgent) {
+      const agentToLaunch = pendingLaunchAgent;
+      setPendingLaunchAgent(null);
+      proceedWithLaunch(agentToLaunch, latestClicks, email);
+    }
+  };
+
+  const handleLogout = () => {
+    clearUserSession();
+    setUserEmail(null);
+    setUserLaunchClicks({});
+    setFavorites([]);
   };
 
   const handleOpenDemo = (agent) => {
     setActiveDemo({ videoUrl: agent.video || "", title: agent.name });
   };
 
-  const handleSubmitRating = (agentId, ratingValue, userEmail, reviewText) => {
+  const handleSubmitRating = (agentId, ratingValue, userEmail, reviewText, backendStats = null) => {
     saveRatingForAgent(agentId, {
       email: userEmail || "user@aurigene.com",
       rating: Number(ratingValue),
@@ -313,6 +452,21 @@ export default function App() {
 
     let updatedStats = null;
     setAgentsList((prev) => {
+      if (backendStats && backendStats.rating !== undefined) {
+        const finalR = Number(backendStats.rating) || 0;
+        const finalC = Number(backendStats.reviews) || 0;
+        updatedStats = { rating: finalR, reviews: finalC };
+        return prev.map((a) =>
+          a.id === agentId
+            ? {
+                ...a,
+                rating: finalR,
+                reviews: finalC,
+                isTopRated: finalR >= 4.5 && finalC > 0,
+              }
+            : a
+        );
+      }
       const computed = recomputeRatings(prev);
       const target = computed.find((a) => a.id === agentId);
       if (target) updatedStats = { rating: target.rating, reviews: target.reviews };
@@ -374,7 +528,26 @@ export default function App() {
   }
 
   if (route === "/upcoming") {
-    return <UpcomingAgentsPage onNavigate={navigate} isDarkMode={isDarkMode} />;
+    return (
+      <>
+        <UpcomingAgentsPage
+          onNavigate={navigate}
+          isDarkMode={isDarkMode}
+          userEmail={userEmail}
+          onOpenLoginModal={() => setIsLoginModalOpen(true)}
+          onLogout={handleLogout}
+        />
+        <LoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => {
+            setIsLoginModalOpen(false);
+            setPendingLaunchAgent(null);
+          }}
+          onLoginSuccess={handleLoginSuccess}
+          pendingAgentName={pendingLaunchAgent?.name}
+        />
+      </>
+    );
   }
 
   if (route === "/stories") {
@@ -394,6 +567,10 @@ export default function App() {
 
       <LandingPage
         isDarkMode={isDarkMode}
+        // user profile
+        userEmail={userEmail}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onLogout={handleLogout}
         // data
         agentsList={agentsList}
         sortedAndFilteredAgents={sortedAndFilteredAgents}
@@ -444,6 +621,16 @@ export default function App() {
         setActiveDemo={setActiveDemo}
         feedbackModal={feedbackModal}
         setFeedbackModal={setFeedbackModal}
+      />
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+          setPendingLaunchAgent(null);
+        }}
+        onLoginSuccess={handleLoginSuccess}
+        pendingAgentName={pendingLaunchAgent?.name}
       />
     </>
   );

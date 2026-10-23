@@ -16,6 +16,7 @@ import { SplitText } from "gsap/SplitText";
 gsap.registerPlugin(ScrollTrigger, SplitText);
 import {
   ArrowLeft,
+  Bell,
   Building2,
   Calendar,
   Check,
@@ -34,7 +35,6 @@ import {
   Send,
   Sparkles,
   Terminal,
-  ThumbsUp,
   X,
   Zap,
 } from "lucide-react";
@@ -45,8 +45,20 @@ import tevaVideo from "../../assets/Teva video recording.mp4";
 import { UPCOMING_AGENTS } from "../../models/upcomingAgents.js";
 import { CANONICAL_DEPARTMENTS, isDemoVideoEnabled } from "../../models/agents.js";
 import { VideoModal } from "../shared/VideoModal.jsx";
+import { RequestAgentModal } from "../shared/RequestAgentModal.jsx";
+import {
+  getActiveUserEmail,
+  getUserInitials,
+  fetchUserData,
+} from "../../services/backendApi.js";
 
-export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
+export function UpcomingAgentsPage({
+  onNavigate,
+  isDarkMode = false,
+  userEmail,
+  onOpenLoginModal,
+  onLogout,
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
@@ -73,26 +85,14 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
   // Copied toast state: { [key]: boolean }
   const [copiedKey, setCopiedKey] = useState(null);
 
-  // Upvotes state: { [agentId]: number }
-  const [upvotes, setUpvotes] = useState(() => {
-    const map = {};
-    UPCOMING_AGENTS.forEach((a) => {
-      map[a.id] = a.upvotes;
-    });
-    return map;
-  });
-
-  const [votedMap, setVotedMap] = useState({});
-
-  // Early access modal state
+  // Early access & notification modal state
   const [accessModalAgent, setAccessModalAgent] = useState(null);
   const [accessFormData, setAccessFormData] = useState({ name: "", email: "", dept: "" });
   const [accessSubmitted, setAccessSubmitted] = useState(false);
 
   // New Agent Request modal state
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const [requestSubmitted, setRequestSubmitted] = useState(false);
-  const [submittedReqId, setSubmittedReqId] = useState("");
+  const [requestCustomPrompt, setRequestCustomPrompt] = useState("");
   const [requestFormData, setRequestFormData] = useState({
     dept: "",
     agentName: "",
@@ -121,12 +121,21 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isDeptDropdownOpen]);
 
-  // Department counts for dropdown
+  // Department counts for dropdown across all canonical enterprise departments
   const departmentCounts = useMemo(() => {
     const counts = {};
+    CANONICAL_DEPARTMENTS.forEach((dept) => {
+      counts[dept] = 0;
+    });
     UPCOMING_AGENTS.forEach((a) => {
-      const dept = (a.department || "General").trim();
-      counts[dept] = (counts[dept] || 0) + 1;
+      const dept = (a.department || "").trim();
+      const match = CANONICAL_DEPARTMENTS.find(
+        (c) => c.toLowerCase() === dept.toLowerCase()
+      );
+      const targetDept = match || dept;
+      if (targetDept) {
+        counts[targetDept] = (counts[targetDept] || 0) + 1;
+      }
     });
     return Object.entries(counts)
       .map(([name, count]) => ({ name, count }))
@@ -268,9 +277,9 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
           opacity: 0,
           y: 35,
           stagger: 0.15,
-          duration: 2.0,
+          duration: 1.2,
           ease: "power2.out",
-          clearProps: "transform",
+          clearProps: "all",
         });
       });
     },
@@ -285,16 +294,10 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
     }, 2000);
   };
 
-  const handleUpvote = (agentId) => {
-    if (votedMap[agentId]) return;
-    setUpvotes((prev) => ({ ...prev, [agentId]: (prev[agentId] || 0) + 1 }));
-    setVotedMap((prev) => ({ ...prev, [agentId]: true }));
-  };
-
   const handleOpenAccessModal = (agent) => {
     setAccessModalAgent(agent);
     setAccessSubmitted(false);
-    setAccessFormData({ name: "", email: "", dept: agent.department });
+    setAccessFormData({ name: "", email: userEmail || "", dept: agent.department || "" });
   };
 
   const handleAccessSubmit = (e) => {
@@ -312,40 +315,23 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
       dept: selectedDept !== "All" ? selectedDept : "",
       agentName: "",
     }));
-    setRequestSubmitted(false);
+    setRequestCustomPrompt("");
     setIsRequestModalOpen(true);
   };
 
   const handleOpenSuggestionModal = (agent) => {
     setRequestFormData({
-      dept: agent.department,
-      agentName: agent.name,
+      dept: agent.department || "",
+      agentName: agent.name || "",
       useCase: "",
       impact: "High",
       name: "",
       email: "",
     });
-    setRequestSubmitted(false);
+    setRequestCustomPrompt("");
     setIsRequestModalOpen(true);
   };
 
-  const handleRequestSubmit = (e) => {
-    e.preventDefault();
-    const reqId = `REQ-${Math.floor(1000 + Math.random() * 9000)}`;
-    setSubmittedReqId(reqId);
-    try {
-      const existing = JSON.parse(localStorage.getItem("requested_ai_agents") || "[]");
-      existing.unshift({
-        id: reqId,
-        ...requestFormData,
-        timestamp: new Date().toISOString(),
-      });
-      localStorage.setItem("requested_ai_agents", JSON.stringify(existing));
-    } catch (err) {
-      console.warn("Could not save request to localStorage", err);
-    }
-    setRequestSubmitted(true);
-  };
 
   return (
     <div className={`upcoming-shell${!isDarkMode ? " upcoming-shell--light" : ""}`}>
@@ -367,7 +353,6 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
             onClick={() => onNavigate("/")}
             style={{ cursor: "pointer" }}
           >
-            <img src={hubblePngLogo} alt="HUBBLE.AI" className="brand-logo-img" />
             <span className="brand-title">HUBBLE<span className="brand-title-suffix">.AI</span></span>
           </div>
         </div>
@@ -385,9 +370,29 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
           </nav>
 
           <div className="header-actions">
-            <div className="user-avatar-pill" title="user@aurigene.com">
-              <div className="avatar-circle">U</div>
-            </div>
+            {!userEmail ? (
+              <div
+                className="user-avatar-pill is-guest"
+                onClick={onOpenLoginModal}
+                title="Guest mode — Click to Sign In"
+              >
+                <div className="avatar-circle">GU</div>
+                <span className="user-profile-tag">Guest</span>
+              </div>
+            ) : (
+              <div
+                className="user-avatar-pill"
+                title={`Signed in as ${userEmail} (Click to Sign Out)`}
+                onClick={() => {
+                  if (window.confirm(`Signed in as ${userEmail}\n\nDo you want to sign out?`)) {
+                    onLogout();
+                  }
+                }}
+              >
+                <div className="avatar-circle">{getUserInitials(userEmail)}</div>
+                <span className="user-profile-name">{userEmail.split("@")[0]}</span>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -473,8 +478,23 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
                           key={item.name}
                           className={`popover-item ${isChecked ? "checked" : ""}`}
                           onClick={() => {
-                            setSelectedDept(isChecked ? "All" : item.name);
+                            const willSelect = selectedDept !== item.name;
+                            const newDept = willSelect ? item.name : "All";
+                            setSelectedDept(newDept);
                             setIsDeptDropdownOpen(false);
+
+                            // If selecting a department with 0 upcoming agents, pop out the request modal!
+                            if (willSelect && item.count === 0) {
+                              setRequestFormData((prev) => ({
+                                ...prev,
+                                dept: item.name,
+                                agentName: "",
+                              }));
+                              setRequestCustomPrompt(
+                                `Sorry, we don't have any upcoming agents for ${item.name} yet. Let's give your idea — we'll build it!`
+                              );
+                              setIsRequestModalOpen(true);
+                            }
                           }}
                         >
                           <div className={`popover-checkbox ${isChecked ? "checked" : ""}`}>
@@ -509,25 +529,51 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
       {/* ────────────────────────── Agent Previews Grid ────────────────────────── */}
       <main className="upcoming-main-grid" ref={gridRef}>
         {filteredAgents.length === 0 ? (
-          <div className="upcoming-empty-state">
-            <Search size={40} className="empty-icon" />
-            <h3>No upcoming agents match your search</h3>
-            <p>Try clearing your search query or selecting "All" departments.</p>
-            <button
-              type="button"
-              className="action-btn-primary"
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedDept("All");
-              }}
-            >
-              Reset Filters
-            </button>
+          <div className="upcoming-empty-state dept-empty-state">
+            <Sparkles size={36} color="#0284c7" className="empty-icon" />
+            <h3>
+              {selectedDept !== "All"
+                ? `Sorry, we don't have any upcoming agents for ${selectedDept} yet.`
+                : "No upcoming agents match your search"}
+            </h3>
+            <p>
+              {selectedDept !== "All"
+                ? "Have an automation challenge or custom workflow requirement? Let's give your idea — we'll build it!"
+                : "Try clearing your search query or selecting a different department."}
+            </p>
+            <div style={{ marginTop: "16px", display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                className="action-btn-primary"
+                onClick={() => {
+                  setRequestFormData((prev) => ({ ...prev, dept: selectedDept !== "All" ? selectedDept : "" }));
+                  setRequestCustomPrompt(
+                    selectedDept !== "All"
+                      ? `Sorry, we don't have any upcoming agents for ${selectedDept} yet. Let's give your idea — we'll build it!`
+                      : "Have an automation idea? Specify your department and use case below to initiate scoping."
+                  );
+                  setIsRequestModalOpen(true);
+                }}
+              >
+                <Sparkles size={15} /> Request an Agent for {selectedDept !== "All" ? selectedDept : "Your Department"}
+              </button>
+              {selectedDept !== "All" && (
+                <button
+                  type="button"
+                  className="popover-clear-btn"
+                  style={{ padding: "8px 18px", borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.2)", color: !isDarkMode ? "#334155" : "#cbd5e1", cursor: "pointer" }}
+                  onClick={() => {
+                    setSearchTerm("");
+                    setSelectedDept("All");
+                  }}
+                >
+                  Show All Departments
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           filteredAgents.map((agent) => {
-            const isVoted = votedMap[agent.id];
-
             return (
               <article key={agent.id} className="upcoming-agent-card">
                 {/* Department Header & Target */}
@@ -546,37 +592,27 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
                 {/* Description: 400-char plain paragraph with use case & problem solving */}
                 <p className="upcoming-desc">{agent.description}</p>
 
-                {/* Footer Actions: Likes + Demo Video */}
+                {/* Footer Actions: Bell + Notify Me */}
                 <div className="upcoming-card-footer">
-                  <button
-                    type="button"
-                    className={`upvote-btn ${isVoted ? "voted" : ""}`}
-                    onClick={() => handleUpvote(agent.id)}
-                    title="Likes"
-                  >
-                    <ThumbsUp size={14} />
-                    <span>{upvotes[agent.id] || agent.upvotes} Likes</span>
-                  </button>
-
-                  {(() => {
-                    const hasDemo = isDemoVideoEnabled(agent);
-                    return (
-                      <button
-                        type="button"
-                        className={`demo-button upcoming-demo-btn ${!hasDemo ? "disabled" : ""}`}
-                        disabled={!hasDemo}
-                        onClick={() => {
-                          if (hasDemo) {
-                            setActiveDemo({ videoUrl: agent.video || tevaVideo, title: agent.name });
-                          }
-                        }}
-                        title={hasDemo ? `Watch Demo Video for ${agent.name}` : "Demo video not available"}
-                        aria-disabled={!hasDemo}
-                      >
-                        <Play size={12} fill="currentColor" /> Demo Video
-                      </button>
-                    );
-                  })()}
+                  <div className="upcoming-notify-action-group">
+                    <button
+                      type="button"
+                      className="upcoming-bell-btn"
+                      onClick={() => handleOpenAccessModal(agent)}
+                      title={`Turn on launch alerts for ${agent.name}`}
+                      aria-label={`Alert bell for ${agent.name}`}
+                    >
+                      <Bell size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      className="upcoming-notify-btn"
+                      onClick={() => handleOpenAccessModal(agent)}
+                      title={`Notify me when ${agent.name} is available`}
+                    >
+                      <span>Notify Me</span>
+                    </button>
+                  </div>
                 </div>
               </article>
             );
@@ -590,8 +626,8 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
           <div className="access-modal-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div className="modal-title-wrap">
-                <span className="modal-kicker">EARLY PILOT ACCESS ENROLLMENT</span>
-                <h3>Enroll for {accessModalAgent.name}</h3>
+                <span className="modal-kicker">RELEASE NOTIFICATION & EARLY ACCESS</span>
+                <h3>Notify Me for {accessModalAgent.name}</h3>
               </div>
               <button
                 type="button"
@@ -607,17 +643,16 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
                 <div className="success-icon-ring">
                   <Check size={28} />
                 </div>
-                <h4>Enrollment Received!</h4>
+                <h4>Notification Request Received!</h4>
                 <p>
-                  You've been added to the priority pilot cohort for{" "}
-                  <strong>{accessModalAgent.name}</strong> ({accessModalAgent.codeName}).
-                  We'll contact you at <strong>{accessFormData.email}</strong> once the sandbox is provisioned.
+                  You will receive launch notifications and priority pilot access at{" "}
+                  <strong>{accessFormData.email}</strong> once <strong>{accessModalAgent.name}</strong> is live.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleAccessSubmit} className="access-modal-form">
                 <p className="modal-instructions">
-                  Get priority sandbox access to test the upcoming agent and provide early feedback to the engineering team.
+                  Be the first to know when {accessModalAgent.name} is deployed. Enter your enterprise details to receive launch alerts and priority pilot sandbox credentials.
                 </p>
 
                 <div className="form-group">
@@ -669,8 +704,8 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn-confirm-access">
-                    Submit Access Request
+                  <button type="submit" className="btn-confirm-access" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <Bell size={14} /> Notify Me on Launch
                   </button>
                 </div>
               </form>
@@ -679,193 +714,16 @@ export function UpcomingAgentsPage({ onNavigate, isDarkMode = false }) {
         </div>
       )}
 
-      {/* ────────────────────────── Request New Agent Modal ────────────────────────── */}
-      {isRequestModalOpen && (
-        <div className="modal-backdrop" onClick={() => setIsRequestModalOpen(false)}>
-          <div className="access-modal-sheet request-agent-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title-wrap">
-                <span className="modal-kicker">ENTERPRISE AGENT INTAKE</span>
-                <h3>Request a New AI Agent</h3>
-              </div>
-              <button
-                type="button"
-                className="close-modal-btn"
-                onClick={() => setIsRequestModalOpen(false)}
-                aria-label="Close"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {requestSubmitted ? (
-              <div className="modal-success-state">
-                <div className="success-icon-ring">
-                  <Check size={28} />
-                </div>
-                <h4>Agent Proposal Submitted!</h4>
-                <p>
-                  Your request <strong>{submittedReqId}</strong> for the{" "}
-                  <strong>{requestFormData.dept || "selected"}</strong> department has been queued for evaluation.
-                </p>
-                <p style={{ marginTop: "10px", fontSize: "13px", color: "#94a3b8" }}>
-                  The Enterprise AI Engineering & Roadmap committee reviews proposals weekly. A confirmation email has been logged for <strong>{requestFormData.email}</strong>.
-                </p>
-                <div className="modal-actions-row" style={{ justifyContent: "center", marginTop: "22px", gap: "10px" }}>
-                  {requestFormData.dept && departments.includes(requestFormData.dept) && (
-                    <button
-                      type="button"
-                      className="btn-cancel"
-                      onClick={() => {
-                        setSelectedDept(requestFormData.dept);
-                        setIsRequestModalOpen(false);
-                        setRequestSubmitted(false);
-                      }}
-                    >
-                      Filter by {requestFormData.dept}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    className="btn-confirm-access"
-                    onClick={() => {
-                      setIsRequestModalOpen(false);
-                      setRequestSubmitted(false);
-                      setRequestFormData({
-                        dept: "",
-                        agentName: "",
-                        useCase: "",
-                        impact: "High",
-                        name: "",
-                        email: "",
-                      });
-                    }}
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleRequestSubmit} className="access-modal-form">
-                <p className="modal-instructions">
-                  Have a workflow bottleneck or new automation idea? Specify your department and describe the use case below to initiate scoping.
-                </p>
-
-                {/* Department Dropdown Selection */}
-                <div className="form-group">
-                  <label htmlFor="req-dept">Department / Research Division *</label>
-                  <select
-                    id="req-dept"
-                    required
-                    value={requestFormData.dept}
-                    onChange={(e) =>
-                      setRequestFormData((p) => ({ ...p, dept: e.target.value }))
-                    }
-                    className="modal-select-input"
-                  >
-                    <option value="" disabled>Select your department from the dropdown...</option>
-                    {allEnterpriseDepts.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Proposed Agent Name */}
-                <div className="form-group">
-                  <label htmlFor="req-agent-name">Proposed Agent Name (Optional)</label>
-                  <input
-                    id="req-agent-name"
-                    type="text"
-                    placeholder="e.g. BioReactivity Predictor, Analytical DocuBot..."
-                    value={requestFormData.agentName}
-                    onChange={(e) =>
-                      setRequestFormData((p) => ({ ...p, agentName: e.target.value }))
-                    }
-                  />
-                </div>
-
-                {/* Agent Use Case */}
-                <div className="form-group">
-                  <label htmlFor="req-usecase">Agent Use Case & Problem Statement *</label>
-                  <textarea
-                    id="req-usecase"
-                    required
-                    rows={4}
-                    placeholder="Describe what you want the agent to do: manual tasks to automate, data sources to analyze, tools to integrate with, and expected outcomes..."
-                    value={requestFormData.useCase}
-                    onChange={(e) =>
-                      setRequestFormData((p) => ({ ...p, useCase: e.target.value }))
-                    }
-                    className="modal-textarea-input"
-                  />
-                </div>
-
-                {/* Priority / Impact */}
-                <div className="form-group">
-                  <label htmlFor="req-impact">Priority & Expected Frequency</label>
-                  <select
-                    id="req-impact"
-                    value={requestFormData.impact}
-                    onChange={(e) =>
-                      setRequestFormData((p) => ({ ...p, impact: e.target.value }))
-                    }
-                    className="modal-select-input"
-                  >
-                    <option value="High">High - Daily repetitive workflow / major bottleneck</option>
-                    <option value="Medium">Medium - Weekly operational assistance</option>
-                    <option value="Exploratory">Exploratory - Novel R&D prototype or feasibility study</option>
-                  </select>
-                </div>
-
-                {/* Requester Info */}
-                <div className="form-row-two">
-                  <div className="form-group">
-                    <label htmlFor="req-name">Your Full Name *</label>
-                    <input
-                      id="req-name"
-                      type="text"
-                      required
-                      placeholder="e.g. Dr. Rajesh Kumar"
-                      value={requestFormData.name}
-                      onChange={(e) =>
-                        setRequestFormData((p) => ({ ...p, name: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="req-email">Enterprise Work Email *</label>
-                    <input
-                      id="req-email"
-                      type="email"
-                      required
-                      placeholder="e.g. r.kumar@aurigene.com"
-                      value={requestFormData.email}
-                      onChange={(e) =>
-                        setRequestFormData((p) => ({ ...p, email: e.target.value }))
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="modal-actions-row">
-                  <button
-                    type="button"
-                    className="btn-cancel"
-                    onClick={() => setIsRequestModalOpen(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn-confirm-access btn-submit-request">
-                    <Send size={14} /> Submit Agent Request
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      {/* ── Request New Agent Modal ── */}
+      <RequestAgentModal
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
+        initialDept={requestFormData.dept}
+        initialAgentName={requestFormData.agentName}
+        customPrompt={requestCustomPrompt}
+        departments={allEnterpriseDepts}
+        onFilterByDept={(dept) => setSelectedDept(dept)}
+      />
 
       {/* ── Demo Video Modal ── */}
       <VideoModal

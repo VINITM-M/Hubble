@@ -13,13 +13,19 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowRight, X } from "lucide-react";
+import {
+  getActiveUserEmail,
+  setActiveUserEmail,
+  submitFeedbackToBackend,
+  recordLaunchClick,
+} from "../../services/backendApi.js";
 
 const STAR_LABELS = ["", "Poor", "Fair", "Good", "Great", "Excellent"];
 
 export function FeedbackModal({ agent, onClose, onSubmitRating }) {
   const [hovered, setHovered]         = useState(0);
   const [selected, setSelected]       = useState(0);
-  const [email, setEmail]             = useState("user@aurigene.com");
+  const [email, setEmail]             = useState(() => getActiveUserEmail() || "");
   const [review, setReview]           = useState("");
   const [attachment, setAttachment]   = useState(null);
   const [submitted, setSubmitted]     = useState(false);
@@ -39,22 +45,49 @@ export function FeedbackModal({ agent, onClose, onSubmitRating }) {
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selected) return;
     const finalEmail = (email && email.trim()) || "user@aurigene.com";
+    setActiveUserEmail(finalEmail);
 
+    // Immediate optimistic local update
     if (onSubmitRating) {
       const stats = onSubmitRating(agent.id, selected, finalEmail, review.trim());
-      setUpdatedStats(stats);
+      if (stats) setUpdatedStats(stats);
     }
     setSubmitted(true);
+
+    // Call backend API with rating, review, and attachment
+    submitFeedbackToBackend({
+      email: finalEmail,
+      agentId: agent.id,
+      agentName: agent.name,
+      rating: selected,
+      feedbackText: review.trim(),
+      attachmentFile: attachment,
+    }).then((backendRes) => {
+      if (backendRes?.updated_stats) {
+        setUpdatedStats(backendRes.updated_stats);
+        if (onSubmitRating) {
+          onSubmitRating(agent.id, selected, finalEmail, review.trim(), backendRes.updated_stats);
+        }
+      }
+    });
 
     // Brief acknowledgement then open agent in new tab
     setTimeout(() => {
       window.open(agent.primary.url, "_blank", "noreferrer");
       onClose();
     }, 1400);
+  };
+
+  const handleSkipLaunch = () => {
+    const finalEmail = (email && email.trim()) || getActiveUserEmail();
+    setActiveUserEmail(finalEmail);
+    recordLaunchClick(finalEmail, agent.id, "agent");
+    window.open(agent.primary.url, "_blank", "noreferrer");
+    onClose();
   };
 
   const isImageIcon = typeof agent.icon === "string";
@@ -71,7 +104,7 @@ export function FeedbackModal({ agent, onClose, onSubmitRating }) {
               {isImageIcon ? <img src={agent.icon} alt={agent.name} /> : <Icon size={20} strokeWidth={1.8} />}
             </div>
             <div>
-              <p className="fb-label">Rate before launching</p>
+              <p className="fb-label">You've used this agent before — Share your rating</p>
               <h3 className="fb-agent-name">{agent.name}</h3>
             </div>
           </div>
@@ -216,7 +249,7 @@ export function FeedbackModal({ agent, onClose, onSubmitRating }) {
               <button
                 type="button"
                 className="fb-skip"
-                onClick={() => { window.open(agent.primary.url, "_blank", "noreferrer"); onClose(); }}
+                onClick={handleSkipLaunch}
               >
                 Skip &amp; Launch
               </button>

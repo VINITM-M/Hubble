@@ -73,7 +73,7 @@ export function AgentCard({
               Trending
             </span>
           )}
-          {(agent.isTopRated || agent.rating >= 4.7) && (
+          {(agent.isTopRated || (agent.rating >= 4.7 && agent.reviews > 0)) && (
             <span className="product-badge badge-top-rated" title="Top Rated Agent">
               Top Rated
             </span>
@@ -105,7 +105,7 @@ export function AgentCard({
 
       {/* Footer: ratings + actions */}
       <div className="card-footer-container">
-        <div className="card-ratings-row">
+        <div className="card-ratings-row card-ratings-row--right">
           <div className="card-ratings">
             <span className="card-ratings-score">{Number(agent.rating).toFixed(1)}</span>
             <svg viewBox="0 0 24 24" className="star-svg star-full" style={{ width: 14, height: 14 }} aria-hidden="true">

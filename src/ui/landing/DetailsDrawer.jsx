@@ -86,12 +86,12 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
           <strong>{agent.department}</strong>
         </section>
 
-        {/* Capabilities */}
+        {/* Capabilities (Maintained at 5 items) */}
         {agent.capabilities && agent.capabilities.length > 0 && (
           <section className="drawer-section">
             <span className="meta-label">Capabilities</span>
             <ul className="capability-list">
-              {agent.capabilities.map((item) => (
+              {agent.capabilities.slice(0, 5).map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
@@ -106,7 +106,14 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
           </div>
           <div>
             <span>Developer</span>
-            <strong>{agent.owner ?? "AI Innovation Team"}</strong>
+            <strong>
+              {agent.owner
+                ? agent.owner
+                    .split(" ")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")
+                : "AI Innovation Team"}
+            </strong>
           </div>
           <div>
             <span>Version</span>

@@ -110,24 +110,34 @@ export function filterAgents(pool, {
   const normalized = query.trim().toLowerCase();
   if (!normalized) return result;
 
-  // 6a. Groq AI matched IDs
+  // 6a. Groq AI matched IDs with resilient normalized matching
   if (Array.isArray(aiMatchedIds)) {
     if (aiMatchedIds.length === 0) return [];
 
-    const matchMap = new Map();
-    aiMatchedIds.forEach((id, idx) => matchMap.set(String(id).trim().toLowerCase(), idx));
+    const cleanStr = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const normalizedAiIds = aiMatchedIds.map((id) => cleanStr(id)).filter(Boolean);
 
-    const matched = result.filter(
-      (agent) =>
-        matchMap.has(agent.id.trim().toLowerCase()) ||
-        matchMap.has(agent.name.trim().toLowerCase()),
-    );
-
-    return matched.sort((a, b) => {
-      const rankA = matchMap.get(a.id.trim().toLowerCase()) ?? matchMap.get(a.name.trim().toLowerCase()) ?? 999;
-      const rankB = matchMap.get(b.id.trim().toLowerCase()) ?? matchMap.get(b.name.trim().toLowerCase()) ?? 999;
-      return rankA - rankB;
+    const matched = result.filter((agent) => {
+      const aId = cleanStr(agent.id);
+      const aName = cleanStr(agent.name);
+      return normalizedAiIds.some((target) => {
+        return (
+          aId === target ||
+          aName === target ||
+          (target.length >= 4 && (aId.includes(target) || target.includes(aId) || aName.includes(target) || target.includes(aName)))
+        );
+      });
     });
+
+    if (matched.length > 0) {
+      return matched.sort((a, b) => {
+        const aId = cleanStr(a.id);
+        const bId = cleanStr(b.id);
+        const rankA = normalizedAiIds.indexOf(aId) >= 0 ? normalizedAiIds.indexOf(aId) : 999;
+        const rankB = normalizedAiIds.indexOf(bId) >= 0 ? normalizedAiIds.indexOf(bId) : 999;
+        return rankA - rankB;
+      });
+    }
   }
 
   // 6b. Intelligent intent & keyword matching fallback
@@ -154,7 +164,7 @@ export function filterAgents(pool, {
     "i", "want", "to", "perform", "do", "need", "help", "with", "me", "a", "an",
     "the", "for", "in", "on", "at", "by", "from", "can", "you", "find", "show",
     "search", "which", "what", "is", "are", "solve", "my", "our", "task", "problem",
-    "agent", "agents", "please", "would", "like", "how", "give"
+    "agent", "agents", "please", "would", "like", "how", "give", "related", "some"
   ]);
 
   const tokens = normalized
@@ -165,40 +175,23 @@ export function filterAgents(pool, {
 
   if (tokens.length === 0) return result;
 
-  // Domain aliases for instant landing page agent matching
-  const DOMAIN_ALIAS_MAP = {
-    "antibody": ["antibody-expert"],
-    "antibodies": ["antibody-expert"],
-    "mab": ["antibody-expert"],
-    "mabs": ["antibody-expert"],
-    "monoclonal": ["antibody-expert"],
-    "peptide": ["peptide-ai"],
-    "peptides": ["peptide-ai"],
-    "synthesis": ["peptide-ai", "carbohydrate-chemistry-expert-agent"],
-    "carbohydrate": ["carbohydrate-chemistry-expert-agent"],
-    "carbohydrates": ["carbohydrate-chemistry-expert-agent"],
-    "carbo": ["carbohydrate-chemistry-expert-agent"],
-    "glyco": ["carbohydrate-chemistry-expert-agent"],
-    "glycobiology": ["carbohydrate-chemistry-expert-agent"],
-    "glycoengineering": ["carbohydrate-chemistry-expert-agent"],
-    "elisa": ["ELISA-Hybridoma-AI"],
-    "hybridoma": ["ELISA-Hybridoma-AI"],
-    "hybridomas": ["ELISA-Hybridoma-AI"],
-    "titration": ["ELISA-Hybridoma-AI"],
-    "spectrophotometer": ["ELISA-Hybridoma-AI"],
-    "clone": ["ELISA-Hybridoma-AI"],
-    "clones": ["ELISA-Hybridoma-AI"],
-    "teva": ["Teva Agent"],
-    "ft07": ["Teva Agent"],
-    "transfer": ["Teva Agent"],
-    "sop": ["documenter"],
-    "sops": ["documenter"],
-    "document": ["documenter"],
-    "documenter": ["documenter"],
-    "documentation": ["documenter"],
-    "compliance": ["documenter", "Teva Agent"],
-    "quality": ["documenter", "Teva Agent"],
-  };
+  // Check word mapping and domain aliases
+  const domainMatchedIds = new Set();
+  tokens.forEach((t) => {
+    // Exact match in WORD_MAPPING
+    if (WORD_MAPPING[t]) {
+      domainMatchedIds.add(WORD_MAPPING[t]);
+    }
+    // Prefix / substring matching (e.g. "carbo", "hydoma", "elisa", "anitbody", "medicals")
+    for (const [key, agentId] of Object.entries(WORD_MAPPING)) {
+      if (
+        (t.length >= 3 && key.startsWith(t)) ||
+        (key.length >= 4 && t.startsWith(key))
+      ) {
+        domainMatchedIds.add(agentId);
+      }
+    }
+  });
 
   const scored = result.map((agent) => {
     let score = 0;
@@ -220,24 +213,15 @@ export function filterAgents(pool, {
         if (agent.name.toLowerCase().includes(t)) score += 4;
         if ((agent.department || "").toLowerCase().includes(t)) score += 3;
       }
-      const mappedIds = DOMAIN_ALIAS_MAP[t];
-      if (mappedIds && mappedIds.includes(agent.id)) {
-        score += 8;
+      if (domainMatchedIds.has(agent.id)) {
+        score += 10;
       }
     });
 
     return { agent, score };
   });
 
-  // If query specifically contained domain keywords, return only agents in that domain
-  const domainMatchedIds = new Set();
-  tokens.forEach((t) => {
-    const mapped = DOMAIN_ALIAS_MAP[t];
-    if (mapped) {
-      mapped.forEach((id) => domainMatchedIds.add(id));
-    }
-  });
-
+  // If query matched any domain or word mapping, filter strictly to those agents
   if (domainMatchedIds.size > 0) {
     const domainAgents = scored.filter((s) => domainMatchedIds.has(s.agent.id));
     if (domainAgents.length > 0) {
@@ -250,6 +234,100 @@ export function filterAgents(pool, {
   const threshold = Math.max(Math.ceil(maxScore * 0.5), 2);
   const matched = scored.filter((s) => s.score >= threshold).sort((a, b) => b.score - a.score);
   return matched.map((s) => s.agent);
+}
+
+// ── Word mapping dictionary & interactive resolver ──────────────────────────
+export const WORD_MAPPING = {
+  // Hybridoma ELISA
+  "elisa": "ELISA-Hybridoma-AI",
+  "hydoma": "ELISA-Hybridoma-AI",
+  "hybridoma": "ELISA-Hybridoma-AI",
+  "hybridomas": "ELISA-Hybridoma-AI",
+  "hybroma": "ELISA-Hybridoma-AI",
+  "titration": "ELISA-Hybridoma-AI",
+  "spectrophotometer": "ELISA-Hybridoma-AI",
+  "optical": "ELISA-Hybridoma-AI",
+  "od": "ELISA-Hybridoma-AI",
+  "clone": "ELISA-Hybridoma-AI",
+  "clones": "ELISA-Hybridoma-AI",
+
+  // Carbo Agent
+  "carbo": "carbohydrate-chemistry-expert-agent",
+  "carbohydrate": "carbohydrate-chemistry-expert-agent",
+  "carbohydrates": "carbohydrate-chemistry-expert-agent",
+  "carbs": "carbohydrate-chemistry-expert-agent",
+  "glyco": "carbohydrate-chemistry-expert-agent",
+  "glycobiology": "carbohydrate-chemistry-expert-agent",
+  "glycoengineering": "carbohydrate-chemistry-expert-agent",
+  "oligosaccharide": "carbohydrate-chemistry-expert-agent",
+
+  // Antibody Agent
+  "antibody": "antibody-expert",
+  "antibodies": "antibody-expert",
+  "anitbody": "antibody-expert",
+  "antobody": "antibody-expert",
+  "mab": "antibody-expert",
+  "mabs": "antibody-expert",
+  "monoclonal": "antibody-expert",
+  "epitope": "antibody-expert",
+
+  // Peptide.AI
+  "peptide": "peptide-ai",
+  "peptides": "peptide-ai",
+  "pept": "peptide-ai",
+  "synthesis": "peptide-ai",
+
+  // Teva Agent
+  "teva": "Teva Agent",
+  "ft07": "Teva Agent",
+  "transfer": "Teva Agent",
+
+  // Documenter AI
+  "medical": "documenter",
+  "medicals": "documenter",
+  "report": "documenter",
+  "reports": "documenter",
+  "sop": "documenter",
+  "sops": "documenter",
+  "document": "documenter",
+  "documents": "documenter",
+  "documenter": "documenter",
+  "documentation": "documenter",
+  "formatting": "documenter",
+  "typo": "documenter",
+  "compliance": "documenter",
+};
+
+/**
+ * Resolves matched agents from user query using WORD_MAPPING.
+ * Used to display interactive recommendation pills in the search bar.
+ */
+export function getWordMappedAgents(query = "", agentsList = []) {
+  if (!query || !query.trim()) return [];
+  const rawWords = query
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, " ")
+    .split(/\s+/)
+    .map((w) => w.trim())
+    .filter((w) => w.length >= 2);
+
+  const matchedIdSet = new Set();
+
+  rawWords.forEach((word) => {
+    if (WORD_MAPPING[word]) {
+      matchedIdSet.add(WORD_MAPPING[word]);
+    }
+    for (const [key, agentId] of Object.entries(WORD_MAPPING)) {
+      if (
+        (word.length >= 3 && key.startsWith(word)) ||
+        (key.length >= 4 && word.startsWith(key))
+      ) {
+        matchedIdSet.add(agentId);
+      }
+    }
+  });
+
+  return agentsList.filter((a) => matchedIdSet.has(a.id));
 }
 
 // ── Rating utilities ──────────────────────────────────────────────────────────
@@ -282,23 +360,41 @@ export function saveRatingForAgent(agentId, ratingRecord) {
   }
 }
 
-export function computeAgentRatings(baseAgents) {
+export function computeAgentRatings(baseAgents, backendRatingsMap = null) {
   const savedRatings = getSavedRatings();
   return baseAgents.map((agent) => {
-    const userReviews = Array.isArray(savedRatings[agent.id]) ? savedRatings[agent.id] : [];
-    const baseR = agent.baseRating  !== undefined ? agent.baseRating  : (Number(agent.rating)  || 4.5);
-    const baseC = agent.baseReviews !== undefined ? agent.baseReviews : (Number(agent.reviews) || 100);
-
-    if (userReviews.length === 0) {
-      return { ...agent, baseRating: baseR, baseReviews: baseC, rating: baseR, reviews: baseC };
+    // If backend ratings map is provided and has data for this agent, prioritize SQLite backend
+    if (backendRatingsMap && backendRatingsMap[agent.id]) {
+      const bRating = Number(backendRatingsMap[agent.id].average_rating) || 0;
+      const bReviews = Number(backendRatingsMap[agent.id].total_reviews) || 0;
+      return {
+        ...agent,
+        baseRating: 0,
+        baseReviews: 0,
+        rating: Math.round(bRating * 10) / 10,
+        reviews: bReviews,
+        isTopRated: bRating >= 4.5 && bReviews > 0,
+      };
     }
 
-    const sumUser     = userReviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
-    const totalReviews = baseC + userReviews.length;
-    const avg         = (baseR * baseC + sumUser) / totalReviews;
+    const userReviews = Array.isArray(savedRatings[agent.id]) ? savedRatings[agent.id] : [];
+    if (userReviews.length === 0) {
+      return { ...agent, baseRating: 0, baseReviews: 0, rating: 0, reviews: 0, isTopRated: false };
+    }
+
+    const sumUser = userReviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0);
+    const totalReviews = userReviews.length;
+    const avg = totalReviews > 0 ? sumUser / totalReviews : 0;
     const finalRating = Math.round(avg * 10) / 10;
 
-    return { ...agent, baseRating: baseR, baseReviews: baseC, rating: finalRating, reviews: totalReviews };
+    return {
+      ...agent,
+      baseRating: 0,
+      baseReviews: 0,
+      rating: finalRating,
+      reviews: totalReviews,
+      isTopRated: finalRating >= 4.5 && totalReviews > 0,
+    };
   });
 }
 
@@ -323,10 +419,23 @@ export function saveFavorites(favs) {
 // ── Computed stat helpers ─────────────────────────────────────────────────────
 export function computeDepartmentCounts(agentsList) {
   const map = new Map();
-  agentsList.forEach((agent) => {
-    const dept = (agent.department || "General").trim();
-    map.set(dept, (map.get(dept) || 0) + 1);
+  // Initialize all canonical enterprise departments with 0
+  CANONICAL_DEPARTMENTS.forEach((dept) => {
+    map.set(dept, 0);
   });
+
+  // Count existing agents per department
+  agentsList.forEach((agent) => {
+    const dept = (agent.department || "").trim();
+    if (dept) {
+      const match = CANONICAL_DEPARTMENTS.find(
+        (c) => c.toLowerCase() === dept.toLowerCase()
+      );
+      const targetDept = match || dept;
+      map.set(targetDept, (map.get(targetDept) || 0) + 1);
+    }
+  });
+
   return Array.from(map.entries())
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => a.name.localeCompare(b.name));

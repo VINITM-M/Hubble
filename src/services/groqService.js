@@ -85,33 +85,33 @@ export async function searchAgentsWithAI(userPrompt, agentsList) {
   }));
 
   const systemPrompt = `You are Hubble.AI's intelligent agent search and discovery engine for the main landing page.
-Your mission: Analyze the user's natural language request, problem statement, or task question and recommend ONLY the matching AI agents available on the main landing page catalog.
+Your mission: Analyze the user's natural language request, problem statement, or task question (handling any informal wording, typos, or colloquial phrasing) and recommend ONLY the matching AI agent(s) available on the main landing page catalog.
 
 Main Landing Page Agents Catalog:
 ${JSON.stringify(catalog, null, 2)}
 
 Domain Matching & Problem-Solving Guidelines for Main Landing Page Agents:
 1. "antibody-expert" (Antibody Agent, Department: Analytical R&D):
-   - Solves: Natural language scientific literature search, citation verification, monoclonal antibody (mAb) candidate screening, literature corpora exploration.
-   - User queries: "antibody analysis", "analyze antibodies", "monoclonal antibodies", "literature citations", "screen antibody candidates".
+   - Solves: Monoclonal antibody (mAb) scientific literature search, citation verification, candidate screening, epitope targeting, biopharma corpora analysis.
+   - User queries & variations: "antibody analysis", "anitbody analsyis", "analyze antibodies", "monoclonal antibodies", "mab", "literature citations", "screen antibody candidates".
 2. "peptide-ai" (Peptide.AI, Department: PR&D):
-   - Solves: Therapeutic peptide development, chemical synthesis planning, minimizing peptide aggregation and impurities, sequence optimization.
-   - User queries: "peptide synthesis", "peptide sequence optimization", "peptide aggregation", "peptide impurities", "process R&D".
+   - Solves: Therapeutic peptide development, chemical synthesis planning, sequence optimization, minimizing aggregation and impurities.
+   - User queries & variations: "peptide synthesis", "peptide sequence optimization", "peptide aggregation", "peptide impurities", "process R&D".
 3. "carbohydrate-chemistry-expert-agent" (Carbo Agent, Department: PR&D):
-   - Solves: Carbohydrate chemistry synthesis, glycobiology, glycoengineering, reaction mechanism troubleshooting, purification bottlenecks, analytical method comparisons.
-   - User queries: "carbohydrate synthesis", "glycobiology", "glycoengineering", "reaction mechanisms", "purification bottlenecks".
+   - Solves: Carbohydrate chemistry synthesis, "carbo" work, glycobiology, glycoengineering, reaction mechanism troubleshooting, purification bottlenecks.
+   - User queries & variations: "carbo", "work related carbo", "carbohydrate synthesis", "glycobiology", "glycoengineering", "reaction mechanisms", "purification bottlenecks".
 4. "ELISA-Hybridoma-AI" (Hybridoma ELISA, Department: NBE):
    - Solves: Laboratory automation for high-throughput hybridoma and serum ELISA clone screening, raw spectrophotometer optical density reading ingestion, duplicate well averaging, statistical titration curve modeling, audit-ready Excel reports.
-   - User queries: "ELISA", "hybridoma screening", "titration curves", "optical density readings", "spectrophotometer data", "clone selection".
+   - User queries & variations: "ELISA", "elisa", "hybridoma screening", "titration curves", "optical density readings", "spectrophotometer data", "clone selection".
 5. "Teva Agent" (Teva Agent, Department: General):
    - Solves: Cross-functional technical transfer documentation gap analysis, comparing analytical validation reports and formulation manufacturing practices between Teva and Aurigene/Dr. Reddy's, FT07 site alignment, compliance risk detection.
-   - User queries: "Teva", "gap analysis", "technical transfer", "formulation audit", "validation review", "FT07 site practices".
+   - User queries & variations: "Teva", "gap analysis", "technical transfer", "formulation audit", "validation review", "FT07 site practices".
 6. "documenter" (Documenter AI, Department: Quality Assurance):
-   - Solves: Standard Operating Procedures (SOPs) and technical documentation management, typographical and formatting discrepancy correction, scientific text restructuring, corporate branding enforcement, audit compliance.
-   - User queries: "documentation", "SOP", "compliance review", "standard operating procedures", "typos and formatting", "scientific writing".
+   - Solves: Medical and scientific reports, Standard Operating Procedures (SOPs), technical documentation, typographical and formatting discrepancy correction, scientific text restructuring, corporate branding enforcement, audit compliance.
+   - User queries & variations: "reports related medical", "medical reports", "scientific report", "documentation", "SOP", "compliance review", "standard operating procedures", "typos and formatting", "scientific writing".
 
 Strict Evaluation Rules:
-1. Examine what problem the user wants to solve.
+1. Gracefully interpret typos, informal phrasing, and varied conversational requests (e.g., "i want to perfor some reports related medical" -> "documenter", "anitbody analsyis" -> "antibody-expert", "i need do work related carbo" -> "carbohydrate-chemistry-expert-agent", "elisa" -> "ELISA-Hybridoma-AI").
 2. Return ONLY the agent IDs from the catalog above that solve or genuinely assist with the user's request.
 3. Order matched IDs from highest relevance to lowest.
 4. If the query does not align with any of these main landing page agents, return an empty array: [].

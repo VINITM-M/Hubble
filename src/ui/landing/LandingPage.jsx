@@ -9,7 +9,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import React, { useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -31,6 +31,7 @@ import {
   Home,
   LayoutGrid,
   Layers,
+  PlusCircle,
   RotateCcw,
   Search,
   Sparkles,
@@ -47,11 +48,16 @@ import { AgentCard } from "./AgentCard.jsx";
 import { DetailsDrawer } from "./DetailsDrawer.jsx";
 import { FeedbackModal } from "./FeedbackModal.jsx";
 import { VideoModal } from "../shared/VideoModal.jsx";
+import { RequestAgentModal } from "../shared/RequestAgentModal.jsx";
 import { Chatbot } from "../chatbot/Chatbot.jsx";
-
-
+import { getWordMappedAgents } from "../../algorithms/agentFilters.js";
+import { getUserInitials } from "../../services/backendApi.js";
 
 export function LandingPage({
+  // user profile
+  userEmail,
+  onOpenLoginModal,
+  onLogout,
   // agent data
   agentsList,
   sortedAndFilteredAgents,
@@ -104,6 +110,38 @@ export function LandingPage({
   const containerRef = useRef(null);
   const headlineRef = useRef(null);
   const subtitleRef = useRef(null);
+
+  // ── New Agent Request Modal state ──
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [requestModalDept, setRequestModalDept] = useState("");
+  const [requestCustomPrompt, setRequestCustomPrompt] = useState("");
+
+  const handleDepartmentSelect = (deptName, count) => {
+    const isTurningOn = !selectedDepartments.includes(deptName);
+    toggleDepartment(deptName);
+
+    // If selecting a department with 0 agents, pop out the request new agent modal with custom prompt
+    if (isTurningOn && count === 0) {
+      setRequestModalDept(deptName);
+      setRequestCustomPrompt(
+        `Sorry, we don't have any agents for ${deptName} yet. Let's give your idea — we'll build it!`
+      );
+      setIsRequestModalOpen(true);
+      setOpenPopover(null);
+    }
+  };
+
+  const handleOpenRequestModal = () => {
+    setRequestModalDept(selectedDepartments[0] || "");
+    setRequestCustomPrompt("");
+    setIsRequestModalOpen(true);
+  };
+
+  // ── Word mapping recommendations ──
+  const wordMappedAgents = useMemo(
+    () => getWordMappedAgents(query, agentsList),
+    [query, agentsList],
+  );
 
   // ── Hero text animations (runs once on mount) ──
   useGSAP(() => {
@@ -241,7 +279,6 @@ export function LandingPage({
             className="brand-logo-container"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <img src={hubblePngLogo} alt="HUBBLE.AI" className="brand-logo-img" />
             <span className="brand-title">HUBBLE<span className="brand-title-suffix">.AI</span></span>
           </div>
         </div>
@@ -270,12 +307,45 @@ export function LandingPage({
           </nav>
 
           <div className="header-actions">
-            <div className="user-avatar-pill" title="user@aurigene.com">
-              <div className="avatar-circle">U</div>
-            </div>
+            {!userEmail ? (
+              <div
+                className="user-avatar-pill is-guest"
+                onClick={onOpenLoginModal}
+                title="Guest mode — Click to Sign In"
+              >
+                <div className="avatar-circle">GU</div>
+                <span className="user-profile-tag">Guest</span>
+              </div>
+            ) : (
+              <div
+                className="user-avatar-pill"
+                title={`Signed in as ${userEmail} (Click to Sign Out)`}
+                onClick={() => {
+                  if (window.confirm(`Signed in as ${userEmail}\n\nDo you want to sign out?`)) {
+                    onLogout();
+                  }
+                }}
+              >
+                <div className="avatar-circle">{getUserInitials(userEmail)}</div>
+                <span className="user-profile-name">{userEmail.split("@")[0]}</span>
+              </div>
+            )}
           </div>
         </div>
       </header>
+
+      {/* ── Top-Right Action: Request New Agent (matches Upcoming Agents page) ── */}
+      <div className="upcoming-top-bar-action">
+        <button
+          type="button"
+          className="btn-request-agent-top"
+          onClick={handleOpenRequestModal}
+          title="Submit a request or workflow idea for a new AI agent"
+        >
+          <PlusCircle size={16} />
+          <span>Request for New Agent</span>
+        </button>
+      </div>
 
       <main>
         {/* ────────────────────────── Discovery Hero ───────────────────── */}
@@ -283,7 +353,7 @@ export function LandingPage({
           {/* kicker pill removed per request */}
           <h1 ref={headlineRef} className="discovery-headline">
             Discover AI Agents for{" "}
-            <span className="highlight-text" style={{ color: "#0a58ca" }}>Every Need from the Hub</span>
+            <span className="highlight-text" style={{ color: "#0a58ca" }}>Every Need from the Hubble</span>
           </h1>
           <p ref={subtitleRef} className="discovery-subtitle">
             Automate work, accelerate research, and unlock productivity with specialized AI agents.
@@ -344,7 +414,7 @@ export function LandingPage({
                     .map((item) => {
                       const isChecked = selectedDepartments.includes(item.name);
                       return (
-                        <div key={item.name} className={`popover-item ${isChecked ? "checked" : ""}`} onClick={() => toggleDepartment(item.name)}>
+                        <div key={item.name} className={`popover-item ${isChecked ? "checked" : ""}`} onClick={() => handleDepartmentSelect(item.name, item.count)}>
                           <div className={`popover-checkbox ${isChecked ? "checked" : ""}`}>{isChecked && <Check size={11} strokeWidth={3} />}</div>
                           <span className="popover-label" title={item.name}>{item.name}</span>
                           <span className="popover-count">{item.count}</span>
@@ -427,6 +497,28 @@ export function LandingPage({
             </div>
           </div>
 
+          {/* Word Mapping interactive recommendation pills */}
+          {wordMappedAgents.length > 0 && query && (
+            <div className="search-word-mapping-pills">
+              <span className="word-mapping-hint">
+                <Sparkles size={13} className="sparkle-hint-icon" />
+                Recommended Agent:
+              </span>
+              {wordMappedAgents.map((agent) => (
+                <button
+                  key={agent.id}
+                  type="button"
+                  className="word-mapping-tag-btn"
+                  onClick={() => setSelectedAgent(agent)}
+                  title={`View details for ${agent.name} (${agent.department})`}
+                >
+                  <span className="tag-agent-name">{agent.name}</span>
+                  <span className="tag-agent-dept">{agent.department}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Clear Filters link */}
           <div className="discovery-clear-filters-row">
             <button type="button" className="clear-filters-link" onClick={handleResetFilters}>
@@ -434,16 +526,15 @@ export function LandingPage({
             </button>
           </div>
 
-
           {/* AI Recommendation bar */}
           {Array.isArray(aiMatchedIds) && query && (
             <div className="ai-recommendation-bar">
               <div className="ai-rec-info">
-                <Sparkles size={16} className="ai-sparkle-icon" />
+                <Sparkles size={18} className="ai-sparkle-icon" />
                 <div>
                   <div>
                     <strong>Groq AI Recommendation:</strong>
-                    <span>
+                    <span className="ai-rec-count">
                       {" "}Found {sortedAndFilteredAgents.length} matching agent
                       {sortedAndFilteredAgents.length === 1 ? "" : "s"}
                     </span>
@@ -479,6 +570,36 @@ export function LandingPage({
               <button type="button" className="popover-clear-btn" style={{ marginTop: 14, padding: "7px 16px", borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.2)", color: "#cbd5e1", cursor: "pointer" }} onClick={() => setSelectedFavFilters([])}>
                 Show All Agents
               </button>
+            </div>
+          ) : selectedDepartments.length > 0 ? (
+            <div className="empty-state dept-empty-state">
+              <Sparkles size={32} color="#0284c7" strokeWidth={2} />
+              <h3>Sorry, we don't have any agents for {selectedDepartments.join(", ")} yet</h3>
+              <p>Have an automation challenge or custom workflow requirement? Let's give your idea — we'll build it!</p>
+              <div style={{ marginTop: 16, display: "flex", gap: "10px", justifyContent: "center", flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="btn-confirm-access"
+                  style={{ padding: "9px 18px", borderRadius: 8, display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer" }}
+                  onClick={() => {
+                    setRequestModalDept(selectedDepartments[0] || "");
+                    setRequestCustomPrompt(
+                      `Sorry, we don't have any agents for ${selectedDepartments[0]} yet. Let's give your idea — we'll build it!`
+                    );
+                    setIsRequestModalOpen(true);
+                  }}
+                >
+                  <Sparkles size={15} /> Request an Agent for {selectedDepartments[0]}
+                </button>
+                <button
+                  type="button"
+                  className="popover-clear-btn"
+                  style={{ padding: "8px 16px", borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.2)", color: "#cbd5e1", cursor: "pointer" }}
+                  onClick={() => toggleDepartment("__clear__")}
+                >
+                  Show All Agents
+                </button>
+              </div>
             </div>
           ) : (
             <div className="empty-state">
@@ -524,6 +645,16 @@ export function LandingPage({
           onSubmitRating={handleSubmitRating}
         />
       )}
+
+      <RequestAgentModal
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
+        initialDept={requestModalDept}
+        customPrompt={requestCustomPrompt}
+        onFilterByDept={(dept) => {
+          if (!selectedDepartments.includes(dept)) toggleDepartment(dept);
+        }}
+      />
 
       <Chatbot
         agentsList={agentsList}
