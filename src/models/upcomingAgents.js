@@ -6,7 +6,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import tevaVideo from "../assets/Teva video recording.mp4";
+import tevaVideo from "../assets/Teva Agent Demo.mp4";
 
 export const UPCOMING_AGENTS = [
   {

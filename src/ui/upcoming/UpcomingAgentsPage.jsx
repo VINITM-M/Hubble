@@ -41,11 +41,12 @@ import {
 
 import hubblePngLogo from "../../assets/hubble.png";
 import aiHubbleLogo from "../../assets/ai_hubble_logo.png";
-import tevaVideo from "../../assets/Teva video recording.mp4";
+import tevaVideo from "../../assets/Teva Agent Demo.mp4";
 import { UPCOMING_AGENTS } from "../../models/upcomingAgents.js";
 import { CANONICAL_DEPARTMENTS, isDemoVideoEnabled } from "../../models/agents.js";
 import { VideoModal } from "../shared/VideoModal.jsx";
 import { RequestAgentModal } from "../shared/RequestAgentModal.jsx";
+import { ContactModal } from "../shared/ContactModal.jsx";
 import {
   getActiveUserEmail,
   getUserInitials,
@@ -63,6 +64,7 @@ export function UpcomingAgentsPage({
   const [selectedDept, setSelectedDept] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [activeDemo, setActiveDemo] = useState(null);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   // Expanded prompt tabs: { [agentId]: "system" | "sample" | "cot" | "output" }
   const [activePromptTab, setActivePromptTab] = useState(() => {
@@ -376,7 +378,7 @@ export function UpcomingAgentsPage({
                 onClick={onOpenLoginModal}
                 title="Guest mode — Click to Sign In"
               >
-                <div className="avatar-circle">GU</div>
+                <div className="avatar-circle">G</div>
                 <span className="user-profile-tag">Guest</span>
               </div>
             ) : (
@@ -731,6 +733,14 @@ export function UpcomingAgentsPage({
         videoUrl={activeDemo?.videoUrl}
         title={activeDemo?.title}
         onClose={() => setActiveDemo(null)}
+      />
+
+      {/* ── Contact Us Modal ── */}
+      <ContactModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        userEmail={userEmail}
+        isDarkMode={isDarkMode}
       />
     </div>
   );

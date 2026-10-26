@@ -45,53 +45,235 @@ import {
   CheckCircle2,
   FileText,
   Activity,
+  TrendingUp,
+  DollarSign,
+  Calendar,
+  Users,
+  Star,
 } from "lucide-react";
 
-import tevaVideo from "../../assets/Teva video recording.mp4";
+import tevaVideo from "../../assets/Teva Agent Demo.mp4";
 import elisaVideo from "../../assets/ELISA_AI.mp4";
+import hubbleAiVideo from "../../assets/hubble_ai.mp4";
+import rohitImage from "../../assets/Rohit-Image.jpg";
+import janardhanImage from "../../assets/Janardhanan.jpg";
+import hibahImage from "../../assets/Hibah.jpg";
 import hubbleLogo from "../../assets/hubble-logo.png";
 import aiHubbleLogo from "../../assets/ai_hubble_logo.png";
 import { VideoModal } from "../shared/VideoModal.jsx";
+import { ContactModal } from "../shared/ContactModal.jsx";
 import "../../styles/stories.css";
+
+// ── Why Hubble.AI ? Analytics Board Data & Live Count-Up Component ───────────
+const WHY_HUBBLE_METRICS_ROW1 = [
+  {
+    id: "time-saved",
+    label: "Time Saved",
+    icon: <Clock size={20} />,
+    color: "#f59e0b",
+    bgColor: "rgba(245, 158, 11, 0.12)",
+    borderColor: "rgba(245, 158, 11, 0.25)",
+    prefix: "",
+    target: 10,
+    suffix: " h",
+    decimals: 0,
+    subtitle: "Hours Reclaimed Per Scientist, Every Week",
+  },
+  {
+    id: "work-done",
+    label: "Work Done By",
+    icon: <TrendingUp size={20} />,
+    color: "#0284c7",
+    bgColor: "rgba(2, 132, 199, 0.12)",
+    borderColor: "rgba(2, 132, 199, 0.25)",
+    prefix: "",
+    target: 3,
+    suffix: "×",
+    decimals: 0,
+    subtitle: "Faster Acceleration Across Experimental Runs",
+  },
+  {
+    id: "money-saved",
+    label: "Money Saved",
+    icon: <DollarSign size={20} />,
+    color: "#10b981",
+    bgColor: "rgba(16, 185, 129, 0.12)",
+    borderColor: "rgba(16, 185, 129, 0.25)",
+    prefix: "$",
+    target: 200,
+    suffix: "K",
+    decimals: 0,
+    subtitle: "Estimated Efficiency Savings Per Team, Yearly",
+  },
+];
+
+const WHY_HUBBLE_METRICS_ROW2 = [
+  {
+    id: "agents-live",
+    label: "Agents Live",
+    icon: <Cpu size={20} />,
+    color: "#8b5cf6",
+    bgColor: "rgba(139, 92, 246, 0.12)",
+    borderColor: "rgba(139, 92, 246, 0.25)",
+    prefix: "",
+    target: 8,
+    suffix: "",
+    decimals: 0,
+    subtitle: "Production-Ready Agents Active Today",
+  },
+  {
+    id: "agents-planned",
+    label: "Agents Planned",
+    icon: <Calendar size={20} />,
+    color: "#2563eb",
+    bgColor: "rgba(37, 99, 235, 0.12)",
+    borderColor: "rgba(37, 99, 235, 0.25)",
+    prefix: "",
+    target: 40,
+    suffix: "",
+    decimals: 0,
+    subtitle: "Roadmap Agents Scheduled For Next Release",
+  },
+  {
+    id: "live-customers",
+    label: "Live Customers",
+    icon: <Users size={20} />,
+    color: "#0d9488",
+    bgColor: "rgba(13, 148, 136, 0.12)",
+    borderColor: "rgba(13, 148, 136, 0.25)",
+    prefix: "",
+    target: 100,
+    suffix: "+",
+    decimals: 0,
+    subtitle: "Active Scientists Leveraging Hubble Daily",
+  },
+  {
+    id: "rating",
+    label: "Platform Rating",
+    icon: <Star size={20} fill="#f59e0b" />,
+    color: "#f59e0b",
+    bgColor: "rgba(245, 158, 11, 0.15)",
+    borderColor: "rgba(245, 158, 11, 0.3)",
+    prefix: "",
+    target: 4.5,
+    suffix: "",
+    decimals: 1,
+    subtitle: "Stars Rating From Verified Lab Researchers",
+  },
+];
+
+function WhyHubbleStatCard({ item, inView, index = 0 }) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    if (!inView) {
+      setDisplayValue(0);
+      return;
+    }
+
+    let startTimestamp = null;
+    let animationFrameId;
+    // 4.2s smooth counting animation (2 seconds extra for rich, clearly visible counting)
+    const duration = 4200;
+
+    const animateCount = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      // Ease-out quart: starts dynamically and decelerates with high precision
+      const easeOut = 1 - Math.pow(1 - progress, 4);
+      const current = easeOut * item.target;
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(animateCount);
+      } else {
+        setDisplayValue(item.target);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(animateCount);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [inView, item.target]);
+
+  const formattedNumber =
+    item.decimals > 0
+      ? displayValue.toFixed(item.decimals)
+      : Math.round(displayValue);
+
+  return (
+    <div
+      className={`why-hubble-stat-card ${inView ? "is-visible" : ""}`}
+      style={{
+        "--card-theme-color": item.color,
+        "--card-theme-bg": item.bgColor,
+        "--card-theme-border": item.borderColor,
+        "--card-delay": `${index * 80}ms`,
+      }}
+    >
+      <div className="why-hubble-card-ambient-glow" />
+      <div className="why-hubble-card-header">
+        <span
+          className="why-hubble-card-icon-pill"
+          style={{
+            color: item.color,
+            background: item.bgColor,
+            borderColor: item.borderColor,
+          }}
+        >
+          {item.icon}
+        </span>
+        <span className="why-hubble-card-label">{item.label}</span>
+      </div>
+
+      <div className="why-hubble-card-number">
+        {item.prefix && (
+          <span className="why-hubble-number-prefix" style={{ color: item.color }}>
+            {item.prefix}
+          </span>
+        )}
+        <span className="why-hubble-number-digit">{formattedNumber}</span>
+        {item.suffix && (
+          <span className="why-hubble-number-unit" style={{ color: item.color }}>
+            {item.suffix}
+          </span>
+        )}
+      </div>
+
+      <p className="why-hubble-card-subtitle">{item.subtitle}</p>
+    </div>
+  );
+}
 
 // ── Real People Stories Data ──────────────────────────────────────────────────
 const REAL_STORIES = [
   {
-    id: "rupali",
-    name: "Rupali",
-    role: "Senior Research Scientist",
-    department: "Analytical R&D",
-    highlight: "Understood her assay protocols & antibody screening for the first time",
-    videoUrl: elisaVideo,
-    videoPoster: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=720&q=85",
+    id: "rohit",
+    name: "Rohit Chintawar",
+    role: "Chief Digital and Information Officer",
+    department: "DPEx",
+    highlight: "It helpful for generate, analysis the data and reports of information team tasks",
+    videoUrl: null,
+    videoPoster: rohitImage,
   },
   {
-    id: "deepu",
-    name: "Dr. Deepu",
-    role: "Formulation Scientist",
-    department: "Formulations Z2",
-    highlight: "Caught critical parameter deviations across batch runs in seconds",
-    videoUrl: tevaVideo,
-    videoPoster: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=720&q=85",
+    id: "janardhan",
+    name: "Janardhan Sridhara",
+    role: "Principal Data Scientist",
+    department: "DPEx",
+    highlight: "Accelerating predictive modeling and automated analytical pipelines for research teams",
+    videoUrl: null,
+    videoPoster: janardhanImage,
   },
   {
-    id: "shilpa",
-    name: "Dr. Shilpa",
-    role: "Lead Biochemist",
-    department: "PR&D & FAR&D",
-    highlight: "Finally got automated clarity across multi-site peptide synthesis runs",
-    videoUrl: elisaVideo,
-    videoPoster: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=720&q=85",
+    id: "hibah",
+    name: "Hibah Ihsan Muhammad",
+    role: "Product Manager",
+    department: "DPEx",
+    highlight: "Streamlining digital agent rollouts and user workflows across scientific departments",
+    videoUrl: null,
+    videoPoster: hibahImage,
   },
-  {
-    id: "abhijeet",
-    name: "Abhijeet",
-    role: "Principal Bioprocess Engineer",
-    department: "Process-Engineering",
-    highlight: "Monitors bioprocess pipeline telemetry and HPLC runs remotely",
-    videoUrl: tevaVideo,
-    videoPoster: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=720&q=85",
-  },
+
 ];
 
 // ── Flowing Feedback & Questions Cards Data ──────────────────────────────────
@@ -209,10 +391,39 @@ const FAQ_ITEMS = [
   },
 ];
 
-export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) {
+export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false, userEmail = null }) {
   // Sound toggle state (default muted for smooth auto-play)
   const [isMuted, setIsMuted] = useState(true);
   const heroVideoRef = useRef(null);
+
+  // Active navigation section state
+  const [activeNavSection, setActiveNavSection] = useState("");
+  const isManualScrollingRef = useRef(false);
+  const manualScrollTimeoutRef = useRef(null);
+
+  // Contact Us modal state
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+  // Scroll observer state for "Why Hubble.AI ?" analytics board
+  const [analyticsInView, setAnalyticsInView] = useState(false);
+  const analyticsSectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setAnalyticsInView(true);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (analyticsSectionRef.current) {
+      observer.observe(analyticsSectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   // Scroll observer state for cards popup animation
   const [cardsInView, setCardsInView] = useState(false);
@@ -233,6 +444,37 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
     }
 
     return () => observer.disconnect();
+  }, []);
+
+  // Scroll spy to update active navbar link dynamically when user scrolls
+  useEffect(() => {
+    const handleScrollSpy = () => {
+      if (isManualScrollingRef.current) return;
+      const scrollPos = (window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0) + 160;
+
+      const analyticsEl = document.getElementById("why-hubble-analytics");
+      const storiesEl = document.getElementById("stories-section");
+      const faqEl = document.getElementById("faq-section");
+
+      const analyticsTop = analyticsEl ? analyticsEl.offsetTop : Infinity;
+      const storiesTop = storiesEl ? storiesEl.offsetTop : Infinity;
+      const faqTop = faqEl ? faqEl.offsetTop : Infinity;
+
+      if (faqTop !== Infinity && scrollPos >= faqTop - 60) {
+        setActiveNavSection("faq");
+      } else if (storiesTop !== Infinity && scrollPos >= storiesTop - 60) {
+        setActiveNavSection("stories");
+      } else if (analyticsTop !== Infinity && scrollPos >= analyticsTop - 60) {
+        setActiveNavSection("analytics");
+      } else {
+        setActiveNavSection("");
+      }
+    };
+
+    window.addEventListener("scroll", handleScrollSpy, { passive: true });
+    // Run once on mount to sync initial position
+    handleScrollSpy();
+    return () => window.removeEventListener("scroll", handleScrollSpy);
   }, []);
 
   // Video modal state
@@ -256,15 +498,41 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
 
   // Open video modal
   const handlePlayStory = (story) => {
+    if (!story.videoUrl) return;
     setActiveModalVideo(story.videoUrl);
     setActiveModalTitle(`${story.name}'s Story – ${story.department}`);
   };
 
-  // Smooth scroll to element
-  const scrollTo = (id) => {
+  // Robust smooth scroll to target section with lock to prevent active indicator jump
+  const scrollTo = (id, navKey) => {
+    if (navKey) setActiveNavSection(navKey);
+    isManualScrollingRef.current = true;
+    if (manualScrollTimeoutRef.current) {
+      clearTimeout(manualScrollTimeoutRef.current);
+    }
+    manualScrollTimeoutRef.current = setTimeout(() => {
+      isManualScrollingRef.current = false;
+    }, 950);
+
     const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
+    if (!el) return;
+
+    // Primary: Native smooth scrollIntoView (honors CSS scroll-margin-top: 96px)
+    try {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch { }
+
+    // Secondary / Fallback: window.scrollTo with calculated absolute offset
+    const navOffset = 96;
+    const bodyTop = document.body.getBoundingClientRect().top;
+    const elTop = el.getBoundingClientRect().top;
+    const offsetPosition = Math.max(0, elTop - bodyTop - navOffset);
+
+    if (window.scrollTo) {
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -285,22 +553,29 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
         <nav className="stories-floating-nav" aria-label="Stories Navigation">
           {/* Left: Brand Wordmark (No Logo) */}
           <div className="stories-nav-brand" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            <span className="stories-nav-logo-text">Hubble<span className="stories-brand-ai">.ai</span></span>
+            <span className="stories-nav-logo-text">Hubble<span className="stories-brand-ai">.AI</span></span>
           </div>
 
-          {/* Center Links */}
+          {/* Center Links: Stories, Analytics, FAQ with 1-to-1 Respective Mapping */}
           <div className="stories-nav-links">
             <button
               type="button"
-              className="stories-nav-link active"
-              onClick={() => scrollTo("stories-section")}
+              className={`stories-nav-link ${activeNavSection === "stories" ? "active" : ""}`}
+              onClick={() => scrollTo("stories-section", "stories")}
             >
               Stories
             </button>
             <button
               type="button"
-              className="stories-nav-link"
-              onClick={() => scrollTo("faq-section")}
+              className={`stories-nav-link ${activeNavSection === "analytics" ? "active" : ""}`}
+              onClick={() => scrollTo("why-hubble-analytics", "analytics")}
+            >
+              Analytics
+            </button>
+            <button
+              type="button"
+              className={`stories-nav-link ${activeNavSection === "faq" ? "active" : ""}`}
+              onClick={() => scrollTo("faq-section", "faq")}
             >
               FAQ
             </button>
@@ -328,7 +603,7 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
         <div className="stories-hero-video-bg">
           <video
             ref={heroVideoRef}
-            src={tevaVideo}
+            src={hubbleAiVideo}
             autoPlay
             loop
             muted={isMuted}
@@ -341,7 +616,7 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
         {/* Hero Overlay Content */}
         <div className="stories-hero-content">
           <h1 className="stories-hero-headline">
-            Hubble.ai for Aurigene
+            Hubble.AI for Aurigene
           </h1>
           <p className="stories-hero-subtitle">
             Reshape the future along with AI Integration
@@ -364,10 +639,45 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
         </div>
 
         {/* Bottom Center: Scroll Indicator */}
-        <div className="stories-scroll-indicator" onClick={() => scrollTo("stories-section")}>
+        <div className="stories-scroll-indicator" onClick={() => scrollTo("why-hubble-analytics", "analytics")}>
           <span className="stories-scroll-text">SCROLL</span>
           <div className="stories-scroll-mouse">
             <div className="stories-scroll-wheel" />
+          </div>
+        </div>
+      </section>
+
+      {/* ──────────────────────────────────────────────────────────────────────
+          2.5 WHY HUBBLE.AI ? LIVE ANALYTICS BOARD (BEFORE FEEDBACK STORIES)
+          ────────────────────────────────────────────────────────────────────── */}
+      <section
+        id="why-hubble-analytics"
+        ref={analyticsSectionRef}
+        className={`why-hubble-section ${analyticsInView ? "is-in-view" : ""}`}
+      >
+        <div className="why-hubble-container">
+          <div className="why-hubble-header">
+            <span className="why-hubble-eyebrow">
+              <Sparkles size={13} className="why-hubble-sparkle" /> Enterprise Impact &amp; Value
+            </span>
+            <h2 className="why-hubble-title">
+              Why Hubble<span className="why-hubble-title-dot">.AI ?</span>
+            </h2>
+            <p className="why-hubble-subtitle">
+              Measurable Productivity Acceleration, Cost Efficiency, And Automated Research Workflows Across Aurigene Laboratories.
+            </p>
+          </div>
+
+          <div className="why-hubble-grid-row-1">
+            {WHY_HUBBLE_METRICS_ROW1.map((item, idx) => (
+              <WhyHubbleStatCard key={item.id} item={item} inView={analyticsInView} index={idx} />
+            ))}
+          </div>
+
+          <div className="why-hubble-grid-row-2">
+            {WHY_HUBBLE_METRICS_ROW2.map((item, idx) => (
+              <WhyHubbleStatCard key={item.id} item={item} inView={analyticsInView} index={idx + 3} />
+            ))}
           </div>
         </div>
       </section>
@@ -414,9 +724,11 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
                 </div>
 
                 {/* Floating Play Button */}
-                <div className="stories-play-btn-circle" title="Play Video Story">
-                  <Play size={24} fill="#ffffff" className="stories-play-icon" />
-                </div>
+                {story.videoUrl && (
+                  <div className="stories-play-btn-circle" title="Play Video Story">
+                    <Play size={24} fill="#ffffff" className="stories-play-icon" />
+                  </div>
+                )}
 
                 {/* Card Content Overlay */}
                 <div className="stories-video-card-content">
@@ -424,6 +736,7 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
                     {story.department}
                   </div>
                   <h3 className="stories-card-name">{story.name}</h3>
+                  {story.role && <p className="stories-card-role">{story.role}</p>}
                   <p className="stories-card-highlight">{story.highlight}</p>
                 </div>
               </div>
@@ -586,7 +899,7 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
           {/* Footer Bottom Bar */}
           <div className="stories-footer-bottom">
             <div className="stories-footer-brand">
-              <img src={hubbleLogo} alt="Hubble Logo" className="stories-footer-logo-img" />
+              <img src={aiHubbleLogo} alt="Hubble Logo" className="stories-footer-logo-img" />
               <span className="stories-footer-brand-name">HUBBLE<span className="brand-dot">.AI</span></span>
               <span className="stories-footer-copy">© 2026 Aurigene Pharmaceutical Services Ltd. All rights reserved.</span>
             </div>
@@ -609,6 +922,13 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
               >
                 Usage Analytics
               </button>
+              <button
+                type="button"
+                onClick={() => setIsContactModalOpen(true)}
+                className="stories-footer-link"
+              >
+                Contact Us
+              </button>
               <button type="button" onClick={() => scrollTo("faq-section")} className="stories-footer-link">
                 FAQ
               </button>
@@ -623,6 +943,14 @@ export function StoriesPage({ onLaunchPortal, onNavigate, isDarkMode = false }) 
         videoUrl={activeModalVideo}
         title={activeModalTitle}
         onClose={() => setActiveModalVideo(null)}
+      />
+
+      {/* Contact Us Modal */}
+      <ContactModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        userEmail={userEmail}
+        isDarkMode={isDarkMode}
       />
     </div>
   );

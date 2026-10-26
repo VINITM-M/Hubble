@@ -41,14 +41,14 @@ export function clearUserSession() {
  * Returns "GU" if user is guest.
  */
 export function getUserInitials(email) {
-  if (!email || !email.trim()) return "GU";
+  if (!email || !email.trim()) return "G";
   const namePart = email.split("@")[0].trim();
-  if (!namePart) return "GU";
+  if (!namePart) return "G";
   const segments = namePart.split(/[._-]/).filter(Boolean);
-  if (segments.length >= 2 && segments[0] && segments[1]) {
-    return (segments[0][0] + segments[1][0]).toUpperCase();
+  if (segments.length >= 1 && segments[0]) {
+    return (segments[0][0]).toUpperCase();
   }
-  return namePart.slice(0, 2).toUpperCase();
+  return namePart.slice(0, 1).toUpperCase();
 }
 
 /**

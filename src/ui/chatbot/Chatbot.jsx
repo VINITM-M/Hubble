@@ -13,7 +13,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Compass, ExternalLink, Sparkles, Send, X } from "lucide-react";
-import chatbotAvatar from "../../assets/chatbot-avatar.jpg";
+import chatbotAvatar from "../../assets/ai-chatbot-loo.jpg";
 import { askChatbot } from "../../services/groqService.js";
 
 const SUGGESTED_QUESTIONS = [
@@ -25,21 +25,21 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 export function Chatbot({ agentsList = [], onLocateAgent, onLaunchAgent }) {
-  const [isOpen, setIsOpen]             = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
-  const [isLoading, setIsLoading]       = useState(false);
-  const [messages, setMessages]         = useState([
+  const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState([
     {
       id: "welcome-1",
       role: "assistant",
       content:
-        "Hi! I'm your HubblePilot AI Advisor. Ask me anything about our agents, which one fits your task, or why you should use a specific agent!",
+        "Hi! I'm Agent Advisor. Ask me anything about our agents",
       agentIds: [],
     },
   ]);
 
   const messagesEndRef = useRef(null);
-  const inputRef       = useRef(null);
+  const inputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -56,7 +56,7 @@ export function Chatbot({ agentsList = [], onLocateAgent, onLaunchAgent }) {
     const text = (textToSend || inputMessage).trim();
     if (!text || isLoading) return;
 
-    const userMsgId  = `user-${Date.now()}`;
+    const userMsgId = `user-${Date.now()}`;
     const newMessages = [...messages, { id: userMsgId, role: "user", content: text, agentIds: [] }];
     setMessages(newMessages);
     setInputMessage("");
@@ -91,8 +91,7 @@ export function Chatbot({ agentsList = [], onLocateAgent, onLaunchAgent }) {
       <div className="chatbot-fab-container">
         {!isOpen && (
           <div className="chatbot-hover-hint">
-            <span className="hint-sparkle">✨</span>
-            <span>Hi! I'm Hubble AI Agent Advisor. I'll support and guide you to the right agent!</span>
+            <span>Hi! I'm  Agent Advisor. I'll support and guide you to the right agent!</span>
             <span className="hint-arrow" />
           </div>
         )}

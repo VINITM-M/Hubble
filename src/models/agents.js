@@ -39,14 +39,15 @@ import {
 } from "lucide-react";
 
 // ── Image asset imports ───────────────────────────────────────────────────────
-import documentIcon  from "../assets/documetor.png";
-import rfiIcon       from "../assets/RFI agent.png";
-import zenIcon       from "../assets/zenai-agent.png";
-import semblyIcon    from "../assets/seamble-ai agent.png";
+import documentIcon from "../assets/documetor.png";
+import rfiIcon from "../assets/RFI agent.png";
+import zenIcon from "../assets/zenai-agent.png";
+import semblyIcon from "../assets/seamble-ai agent.png";
 
-// ── Video asset imports ────────────────────────────────────────────────────────
-import tevaVideo  from "../assets/Teva video recording.mp4";
+import tevaVideo from "../assets/Teva Agent Demo.mp4";
 import elisaVideo from "../assets/ELISA_AI.mp4";
+import antibodyVideo from "../assets/Anitbody-expert.mp4";
+import peptideVideo from "../assets/Peptide AI.mp4";
 let dummyVideo = tevaVideo; // fallback for other cards so demo video plays Teva demo
 
 
@@ -62,14 +63,14 @@ export const initialAgents = [
     detailedDescription:
       "A knowledge-grounded AI assistant empowering R&D scientists to query complex antibody research in natural language. It interprets specialized scientific literature to retrieve grounded, source-backed answers—accelerating discovery workflows and eliminating hours of manual literature review.",
     icon: Search,
-    video: dummyVideo,
+    video: antibodyVideo,
     accent: "violet",
     status: "Available",
     isTrending: true,
     cardTags: ["Antibody Discovery", "Literature Search", "Candidate Screening"],
     lastUsed: null,
-    primary:     { provider: "Microsoft", url: "https://...", status: "Available" },
-    alternative: { provider: "Aurigene",  url: "https://...", status: "Available" },
+    primary: { provider: "Microsoft", url: "https://...", status: "Available" },
+    alternative: { provider: "Aurigene", url: "https://...", status: "Available" },
     capabilities: [
       "Knowledge-grounded natural language Q&A for antibody research",
       "Retrieval & scientific interpretation from curated research sources",
@@ -91,13 +92,13 @@ export const initialAgents = [
     description:
       "Built for process R&D scientists developing therapeutic peptides and complex sequence variations. It searches specialized literature, evaluates experimental synthesis conditions, and recommends sequence optimizations to minimize aggregation and impurities. This streamlines chemical synthesis planning and eliminates trial-and-error laboratory troubleshooting cycles.",
     icon: Sparkles,
-    video: dummyVideo,
+    video: peptideVideo,
     accent: "cyan",
     status: "Available",
     isTrending: false,
     lastUsed: null,
-    primary:     { provider: "Microsoft", url: "https://...", status: "Available" },
-    alternative: { provider: "Aurigene",  url: "https://...", status: "Available" },
+    primary: { provider: "Microsoft", url: "https://...", status: "Available" },
+    alternative: { provider: "Aurigene", url: "https://...", status: "Available" },
     capabilities: [
       "Peptide structure & sequence optimization",
       "Synthesis troubleshooting & aggregation mitigation",
@@ -127,8 +128,8 @@ export const initialAgents = [
     isTrending: false,
     cardTags: ["Carbohydrate Chemistry", "Synthesis Guidance", "Reaction Troubleshooting"],
     lastUsed: null,
-    primary:     { provider: "Microsoft", url: "https://...", status: "Available" },
-    alternative: { provider: "Aurigene",  url: "https://...", status: "Available" },
+    primary: { provider: "Microsoft", url: "https://...", status: "Available" },
+    alternative: { provider: "Aurigene", url: "https://...", status: "Available" },
     capabilities: [
       "Carbohydrate chemistry, glycobiology & glycoengineering Q&A",
       "Synthesis, glycosylation & analytical method comparison",
@@ -158,7 +159,7 @@ export const initialAgents = [
     isTrending: false,
     cardTags: ["ELISA Automation", "Clone Screening", "Titration Curves"],
     lastUsed: null,
-    primary:     { provider: "Microsoft", url: "https://...", status: "Available" },
+    primary: { provider: "Microsoft", url: "https://...", status: "Available" },
     alternative: null,
     capabilities: [
       "Hybridoma ELISA clone screening & automatic clone selection",
@@ -189,8 +190,8 @@ export const initialAgents = [
     isTrending: true,
     cardTags: ["Gap Analysis", "Validation Review", "Practice Audit"],
     lastUsed: null,
-    primary:     { provider: "Microsoft", url: "https://...", status: "Available" },
-    alternative: { provider: "Aurigene",  url: "https://...", status: "Available" },
+    primary: { provider: "Microsoft", url: "https://...", status: "Available" },
+    alternative: { provider: "Aurigene", url: "https://...", status: "Available" },
     capabilities: [
       "Analytical validation & method comparison gap analysis",
       "Formulation manufacturing practice cross-audit",
@@ -217,8 +218,8 @@ export const initialAgents = [
     status: "Available",
     isTrending: false,
     lastUsed: null,
-    primary:     { provider: "Microsoft", url: "https://...", status: "Available" },
-    alternative: { provider: "Aurigene",  url: "https://...", status: "Available" },
+    primary: { provider: "Microsoft", url: "https://...", status: "Available" },
+    alternative: { provider: "Aurigene", url: "https://...", status: "Available" },
     capabilities: [
       "Automated technical & SOP documentation compliance",
       "Scientific document formatting & restructuring",
@@ -266,7 +267,7 @@ export const isDemoVideoEnabled = (agent) => {
   const id = String(agent.id || "").toLowerCase().trim();
   const name = String(agent.name || "").toLowerCase().trim();
 
-  // Allowed agents: Documenter AI, Teva Agent, and Hybridoma ELISA
+  // Allowed agents: Documenter AI, Teva Agent, Hybridoma ELISA, Antibody Agent, and Peptide.AI
   return (
     id === "documenter" ||
     name.includes("documenter") ||
@@ -274,6 +275,10 @@ export const isDemoVideoEnabled = (agent) => {
     name.includes("teva") ||
     id === "elisa-hybridoma-ai" ||
     name.includes("hybridoma") ||
-    name.includes("elisa")
+    name.includes("elisa") ||
+    id === "antibody-expert" ||
+    name.includes("antibody") ||
+    id === "peptide-ai" ||
+    name.includes("peptide")
   );
 };

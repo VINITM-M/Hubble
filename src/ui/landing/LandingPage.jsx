@@ -49,6 +49,7 @@ import { DetailsDrawer } from "./DetailsDrawer.jsx";
 import { FeedbackModal } from "./FeedbackModal.jsx";
 import { VideoModal } from "../shared/VideoModal.jsx";
 import { RequestAgentModal } from "../shared/RequestAgentModal.jsx";
+import { ContactModal } from "../shared/ContactModal.jsx";
 import { Chatbot } from "../chatbot/Chatbot.jsx";
 import { getWordMappedAgents } from "../../algorithms/agentFilters.js";
 import { getUserInitials } from "../../services/backendApi.js";
@@ -115,6 +116,9 @@ export function LandingPage({
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [requestModalDept, setRequestModalDept] = useState("");
   const [requestCustomPrompt, setRequestCustomPrompt] = useState("");
+
+  // ── Contact Us Modal state ──
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   const handleDepartmentSelect = (deptName, count) => {
     const isTurningOn = !selectedDepartments.includes(deptName);
@@ -313,7 +317,7 @@ export function LandingPage({
                 onClick={onOpenLoginModal}
                 title="Guest mode — Click to Sign In"
               >
-                <div className="avatar-circle">GU</div>
+                <div className="avatar-circle">G</div>
                 <span className="user-profile-tag">Guest</span>
               </div>
             ) : (
@@ -615,9 +619,13 @@ export function LandingPage({
       <footer className="footer" id="support">
         <span>© 2026 Aurigene Pharmaceutical Services Limited. All rights reserved.</span>
         <div>
-          <a href="#">Privacy Policy</a>
-          <i /> <a href="#">Terms of Use</a>
-          <i /> <a href="#">Help &amp; Support</a>
+          <button
+            type="button"
+            onClick={() => setIsContactModalOpen(true)}
+            className="footer-link-btn"
+          >
+            Contact Us
+          </button>
         </div>
       </footer>
 
@@ -654,6 +662,13 @@ export function LandingPage({
         onFilterByDept={(dept) => {
           if (!selectedDepartments.includes(dept)) toggleDepartment(dept);
         }}
+      />
+
+      <ContactModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        userEmail={userEmail}
+        isDarkMode={isDarkMode}
       />
 
       <Chatbot

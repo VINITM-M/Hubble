@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Sparkles, Send, X, BarChart3, Layers, Users } from "lucide-react";
-import chatbotAvatar from "../../assets/chatbot-avatar.jpg";
+import chatbotAvatar from "../../assets/ai-chatbot-loo.jpg";
 
 // Usage page chatbot endpoint removed
 async function askUsagePageChatbot() {

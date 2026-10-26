@@ -556,6 +556,7 @@ export default function App() {
         onLaunchPortal={() => navigate("/")}
         onNavigate={navigate}
         isDarkMode={isDarkMode}
+        userEmail={userEmail}
       />
     );
   }
