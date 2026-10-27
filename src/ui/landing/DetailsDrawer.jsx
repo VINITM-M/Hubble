@@ -17,12 +17,21 @@ import React from "react";
 import { Bookmark, ExternalLink, Play, X } from "lucide-react";
 import { isDemoVideoEnabled } from "../../models/agents.js";
 
-export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorited, onToggleFavorite }) {
+export function DetailsDrawer({
+  agent,
+  onClose,
+  onLaunch,
+  onOpenDemo,
+  requestStatus,
+  isFavorited,
+  onToggleFavorite,
+}) {
   if (!agent) return null;
 
-  const isImageIcon       = typeof agent.icon === "string";
-  const Icon              = !isImageIcon ? agent.icon : null;
-  const primaryEnabled    = agent.primary?.status === "Available";
+  const isImageIcon = typeof agent.icon === "string";
+  const Icon = !isImageIcon ? agent.icon : null;
+  const primaryEnabled = agent.primary?.status === "Available";
+  const isTeva = agent?.id?.toLowerCase() === "teva agent" || agent?.name?.toLowerCase().includes("teva");
 
   return (
     <div className="drawer-layer" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
@@ -109,9 +118,9 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
             <strong>
               {agent.owner
                 ? agent.owner
-                    .split(" ")
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(" ")
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")
                 : "AI Innovation Team"}
             </strong>
           </div>
@@ -144,18 +153,31 @@ export function DetailsDrawer({ agent, onClose, onLaunch, onOpenDemo, isFavorite
               </button>
             );
           })()}
-          <a
-            className={`launch-button wide ${!primaryEnabled ? "disabled" : ""}`}
-            href={primaryEnabled ? agent.primary?.url : undefined}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => {
-              e.preventDefault();
-              if (primaryEnabled && onLaunch) onLaunch(agent.id);
-            }}
-          >
-            Launch Agent <ExternalLink size={15} />
-          </a>
+
+
+          {!isTeva && requestStatus === "pending" ? (
+            <span
+              className="launch-button wide launch-btn--requested"
+              style={{ justifyContent: "center" }}
+              aria-disabled="true"
+            >
+              Requested
+            </span>
+          ) : (
+            <a
+              className={`launch-button wide ${!primaryEnabled ? "disabled" : ""}`}
+              href={primaryEnabled ? agent.primary?.url : undefined}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                if (primaryEnabled && onLaunch) onLaunch(agent.id);
+              }}
+            >
+              Launch Agent <ExternalLink size={15} />
+            </a>
+          )}
+
         </div>
       </aside>
     </div>

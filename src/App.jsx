@@ -622,6 +622,7 @@ export default function App() {
         setActiveDemo={setActiveDemo}
         feedbackModal={feedbackModal}
         setFeedbackModal={setFeedbackModal}
+        userEmail={userEmail}
       />
 
       <LoginModal

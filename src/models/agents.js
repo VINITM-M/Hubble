@@ -190,7 +190,7 @@ export const initialAgents = [
     isTrending: true,
     cardTags: ["Gap Analysis", "Validation Review", "Practice Audit"],
     lastUsed: null,
-    primary: { provider: "Microsoft", url: "https://...", status: "Available" },
+    primary: { provider: "Microsoft", url: "https://copilot.cloud.microsoft/agents/copilotstudio/T_03f2854a-2058-0cb6-3f99-c8b4ab2c10fb.01097549-70e5-4589-a68a-85dd5d9457b8", status: "Available" },
     alternative: { provider: "Aurigene", url: "https://...", status: "Available" },
     capabilities: [
       "Analytical validation & method comparison gap analysis",

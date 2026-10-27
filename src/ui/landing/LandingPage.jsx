@@ -9,7 +9,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -50,6 +50,7 @@ import { FeedbackModal } from "./FeedbackModal.jsx";
 import { VideoModal } from "../shared/VideoModal.jsx";
 import { RequestAgentModal } from "../shared/RequestAgentModal.jsx";
 import { ContactModal } from "../shared/ContactModal.jsx";
+import { RaiseRequestModal } from "../shared/RaiseRequestModal.jsx";
 import { Chatbot } from "../chatbot/Chatbot.jsx";
 import { getWordMappedAgents } from "../../algorithms/agentFilters.js";
 import { getUserInitials } from "../../services/backendApi.js";
@@ -115,10 +116,71 @@ export function LandingPage({
   // ── New Agent Request Modal state ──
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [requestModalDept, setRequestModalDept] = useState("");
+  const [requestModalAgentName, setRequestModalAgentName] = useState("");
   const [requestCustomPrompt, setRequestCustomPrompt] = useState("");
 
   // ── Contact Us Modal state ──
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+  // ── Agent request statuses: { [agentId]: "pending" | "approved" }  (persisted) ──
+  const [agentRequestStatuses, setAgentRequestStatuses] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("hubble_agent_request_status") || "{}");
+    } catch { return {}; }
+  });
+
+  // ── Raise Request Modal: which agent to show it for ──
+  const [raiseRequestAgent, setRaiseRequestAgent] = useState(null);
+
+  const saveRequestStatuses = (next) => {
+    try { localStorage.setItem("hubble_agent_request_status", JSON.stringify(next)); } catch { /* ignore */ }
+    setAgentRequestStatuses(next);
+  };
+
+  // Development / testing helpers exposed to window
+  useEffect(() => {
+    window.hubbleApproveAgent = (agentId) => {
+      const next = { ...agentRequestStatuses, [agentId]: "approved" };
+      saveRequestStatuses(next);
+      console.log(`[Hubble] Agent "${agentId}" approved!`);
+    };
+    window.hubbleResetAgentRequests = () => {
+      saveRequestStatuses({});
+      console.log("[Hubble] Agent request statuses cleared.");
+    };
+  }, [agentRequestStatuses]);
+
+  // Called when the user successfully submits the raise-request form
+  const handleRequestSubmitted = (agentId) => {
+    saveRequestStatuses({ ...agentRequestStatuses, [agentId]: "pending" });
+  };
+
+  // Intercepts the Launch Agent button
+  const handleLaunchWithRequest = (agentId) => {
+    const agent = agentsList.find((a) => a.id === agentId);
+    const isTeva = agentId?.toLowerCase() === "teva agent" || agent?.name?.toLowerCase().includes("teva");
+
+    // Teva Agent launches directly with no request modal
+    if (isTeva) {
+      handleLaunchAgent(agentId);
+      return;
+    }
+
+    const status = agentRequestStatuses[agentId]; // undefined | "pending" | "approved"
+
+    if (status === "approved") {
+      // Fully approved — launch directly
+      handleLaunchAgent(agentId);
+    } else if (status === "pending") {
+      // Already requested, waiting — do nothing (button shown as Requested)
+      return;
+    } else {
+      // First time — show raise request modal
+      if (agent) setRaiseRequestAgent(agent);
+      else handleLaunchAgent(agentId);
+    }
+  };
+
 
   const handleDepartmentSelect = (deptName, count) => {
     const isTurningOn = !selectedDepartments.includes(deptName);
@@ -127,6 +189,7 @@ export function LandingPage({
     // If selecting a department with 0 agents, pop out the request new agent modal with custom prompt
     if (isTurningOn && count === 0) {
       setRequestModalDept(deptName);
+      setRequestModalAgentName("");
       setRequestCustomPrompt(
         `Sorry, we don't have any agents for ${deptName} yet. Let's give your idea — we'll build it!`
       );
@@ -137,9 +200,12 @@ export function LandingPage({
 
   const handleOpenRequestModal = () => {
     setRequestModalDept(selectedDepartments[0] || "");
+    setRequestModalAgentName("");
     setRequestCustomPrompt("");
     setIsRequestModalOpen(true);
   };
+
+
 
   // ── Word mapping recommendations ──
   const wordMappedAgents = useMemo(
@@ -357,7 +423,7 @@ export function LandingPage({
           {/* kicker pill removed per request */}
           <h1 ref={headlineRef} className="discovery-headline">
             Discover AI Agents for{" "}
-            <span className="highlight-text" style={{ color: "#0a58ca" }}>Every Need from the Hubble</span>
+            <span className="highlight-text">Every Need from the Hubble</span>
           </h1>
           <p ref={subtitleRef} className="discovery-subtitle">
             Automate work, accelerate research, and unlock productivity with specialized AI agents.
@@ -557,9 +623,10 @@ export function LandingPage({
                 <AgentCard
                   key={agent.id}
                   agent={agent}
-                  onLaunch={handleLaunchAgent}
+                  onLaunch={handleLaunchWithRequest}
                   onOpenDemo={handleOpenDemo}
                   onOpenDetails={() => setSelectedAgent(agent)}
+                  requestStatus={agentRequestStatuses[agent.id] || null}
                   isHighlighted={highlightedAgentId === agent.id}
                   isFavorited={favorites.includes(agent.id)}
                   onToggleFavorite={toggleFavorite}
@@ -633,8 +700,9 @@ export function LandingPage({
       <DetailsDrawer
         agent={selectedAgent}
         onClose={() => setSelectedAgent(null)}
-        onLaunch={handleLaunchAgent}
+        onLaunch={handleLaunchWithRequest}
         onOpenDemo={handleOpenDemo}
+        requestStatus={selectedAgent ? (agentRequestStatuses[selectedAgent.id] || null) : null}
         isFavorited={selectedAgent ? favorites.includes(selectedAgent.id) : false}
         onToggleFavorite={toggleFavorite}
       />
@@ -656,8 +724,12 @@ export function LandingPage({
 
       <RequestAgentModal
         isOpen={isRequestModalOpen}
-        onClose={() => setIsRequestModalOpen(false)}
+        onClose={() => {
+          setIsRequestModalOpen(false);
+          setRequestModalAgentName("");
+        }}
         initialDept={requestModalDept}
+        initialAgentName={requestModalAgentName}
         customPrompt={requestCustomPrompt}
         onFilterByDept={(dept) => {
           if (!selectedDepartments.includes(dept)) toggleDepartment(dept);
@@ -667,6 +739,18 @@ export function LandingPage({
       <ContactModal
         isOpen={isContactModalOpen}
         onClose={() => setIsContactModalOpen(false)}
+        userEmail={userEmail}
+        isDarkMode={isDarkMode}
+      />
+
+      <RaiseRequestModal
+        isOpen={Boolean(raiseRequestAgent)}
+        agent={raiseRequestAgent}
+        onClose={() => setRaiseRequestAgent(null)}
+        onSubmit={(agentId) => {
+          handleRequestSubmitted(agentId); // mark as pending
+          setRaiseRequestAgent(null);
+        }}
         userEmail={userEmail}
         isDarkMode={isDarkMode}
       />

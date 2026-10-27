@@ -92,6 +92,16 @@ export function UpcomingAgentsPage({
   const [accessFormData, setAccessFormData] = useState({ name: "", email: "", dept: "" });
   const [accessSubmitted, setAccessSubmitted] = useState(false);
 
+  // Persisted set of agent IDs the user has already submitted "Notify Me" for
+  const [notifiedAgentIds, setNotifiedAgentIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem("hubble_notified_agents");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // New Agent Request modal state
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const [requestCustomPrompt, setRequestCustomPrompt] = useState("");
@@ -305,6 +315,19 @@ export function UpcomingAgentsPage({
   const handleAccessSubmit = (e) => {
     e.preventDefault();
     setAccessSubmitted(true);
+    // Persist this agent as notified so the card button stays disabled
+    if (accessModalAgent) {
+      setNotifiedAgentIds((prev) => {
+        if (prev.includes(accessModalAgent.id)) return prev;
+        const next = [...prev, accessModalAgent.id];
+        try {
+          localStorage.setItem("hubble_notified_agents", JSON.stringify(next));
+        } catch (err) {
+          console.warn("Could not save notified agents", err);
+        }
+        return next;
+      });
+    }
     setTimeout(() => {
       setAccessModalAgent(null);
       setAccessSubmitted(false);
@@ -596,25 +619,34 @@ export function UpcomingAgentsPage({
 
                 {/* Footer Actions: Bell + Notify Me */}
                 <div className="upcoming-card-footer">
-                  <div className="upcoming-notify-action-group">
-                    <button
-                      type="button"
-                      className="upcoming-bell-btn"
-                      onClick={() => handleOpenAccessModal(agent)}
-                      title={`Turn on launch alerts for ${agent.name}`}
-                      aria-label={`Alert bell for ${agent.name}`}
-                    >
-                      <Bell size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      className="upcoming-notify-btn"
-                      onClick={() => handleOpenAccessModal(agent)}
-                      title={`Notify me when ${agent.name} is available`}
-                    >
-                      <span>Notify Me</span>
-                    </button>
-                  </div>
+                  {(() => {
+                    const isNotified = notifiedAgentIds.includes(agent.id);
+                    return (
+                      <div className="upcoming-notify-action-group">
+                        <button
+                          type="button"
+                          className={`upcoming-bell-btn${isNotified ? " is-notified" : ""}`}
+                          onClick={() => !isNotified && handleOpenAccessModal(agent)}
+                          title={isNotified ? "You'll be notified on launch" : `Turn on launch alerts for ${agent.name}`}
+                          aria-label={isNotified ? `Notification active for ${agent.name}` : `Alert bell for ${agent.name}`}
+                          disabled={isNotified}
+                          aria-disabled={isNotified}
+                        >
+                          {isNotified ? <Check size={15} /> : <Bell size={15} />}
+                        </button>
+                        <button
+                          type="button"
+                          className={`upcoming-notify-btn${isNotified ? " is-notified" : ""}`}
+                          onClick={() => !isNotified && handleOpenAccessModal(agent)}
+                          title={isNotified ? "You'll be notified on launch" : `Notify me when ${agent.name} is available`}
+                          disabled={isNotified}
+                          aria-disabled={isNotified}
+                        >
+                          <span>{isNotified ? "Notified ✓" : "Notify Me"}</span>
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
               </article>
             );

@@ -23,6 +23,7 @@ export function AgentCard({
   onLaunch,
   onOpenDemo,
   onOpenDetails,
+  requestStatus,   // null | "pending" | "approved"
   isHighlighted,
   isFavorited,
   onToggleFavorite,
@@ -30,6 +31,7 @@ export function AgentCard({
   const isImageIcon = typeof agent.icon === "string";
   const Icon        = !isImageIcon ? agent.icon : null;
   const disabled    = agent.primary.status !== "Available";
+  const isTeva      = agent?.id?.toLowerCase() === "teva agent" || agent?.name?.toLowerCase().includes("teva");
 
   // Trim capability tags to 3 words max each, show first 3
   const tags = useMemo(() => {
@@ -105,6 +107,9 @@ export function AgentCard({
 
       {/* Footer: ratings + actions */}
       <div className="card-footer-container">
+
+
+
         <div className="card-ratings-row card-ratings-row--right">
           <div className="card-ratings">
             <span className="card-ratings-score">{Number(agent.rating).toFixed(1)}</span>
@@ -140,21 +145,34 @@ export function AgentCard({
             );
           })()}
 
-          <a
-            className={`launch-button ${disabled ? "disabled" : ""}`}
-            href={disabled ? undefined : agent.primary.url}
-            target="_blank"
-            rel="noreferrer"
-            aria-disabled={disabled}
-            title={disabled ? "This agent is not yet available" : `Launch ${agent.name}`}
-            onClick={(e) => {
-              e.preventDefault();
-              if (!disabled && onLaunch) onLaunch(agent.id);
-            }}
-          >
-            {disabled ? "Coming Soon" : "Launch Agent"}
-            {!disabled && <ArrowRight size={14} />}
-          </a>
+          {/* ── 3-state Launch button ── */}
+          {(() => {
+            if (!isTeva && requestStatus === "pending") {
+              return (
+                <span className="launch-button launch-btn--requested" aria-disabled="true">
+                  Requested
+                </span>
+              );
+            }
+            // approved OR null — show Launch / Coming Soon
+            return (
+              <a
+                className={`launch-button ${disabled ? "disabled" : ""}`}
+                href={disabled ? undefined : agent.primary.url}
+                target="_blank"
+                rel="noreferrer"
+                aria-disabled={disabled}
+                title={disabled ? "This agent is not yet available" : (requestStatus === "approved" ? `Launch ${agent.name} (Approved)` : `Launch ${agent.name}`)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!disabled && onLaunch) onLaunch(agent.id);
+                }}
+              >
+                {disabled ? "Coming Soon" : "Launch Agent"}
+                {!disabled && <ArrowRight size={14} />}
+              </a>
+            );
+          })()}
         </div>
       </div>
     </article>
